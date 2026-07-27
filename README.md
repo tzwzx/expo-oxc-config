@@ -73,6 +73,42 @@ fallow が宣言済み依存からツールを検出する都合で到達不能�
 `Math.random`、TS optional 型への `undefined` 代入など）は
 `my-unify-expo-config` スキルの `references/standards.md` を参照。
 
+## 更新の手順（重要）
+
+oxlint / oxfmt / ultracite / プラグインの更新は**このリポジトリで行う**
+（アプリ側で `bun update` しても上がらない）。手順:
+
+```bash
+bun update          # または package.json のバージョンを編集
+bun verify          # ← ツールチェーンが壊れていないか検査
+git commit && git push
+```
+
+各アプリは `bun update @tzwzx/expo-oxc-config` で追従し、
+そのリポジトリの `bun codesweep:check` で最終確認する。
+
+### `bun verify` が見るもの
+
+**ルールの追加・改名・挙動変更は許容する**（アプリ側で追従すればよい）。
+検査するのは「まともに動かない状態のまま配ってしまう」ことだけ:
+
+| 検査 | 何を防ぐか |
+|---|---|
+| ルールが読み込まれている | 設定・プリセットの解決に失敗したまま気づかない |
+| 3プラグインが検出を出している | プラグインが静かに読み込まれなくなる |
+| ignorePatterns が効いている | `extends` がマージしない仕様を踏んで生成物まで lint される |
+| `src/**` / `jest.setup.ts` の override が効いている | override の書式が変わって緩和が失われる |
+| off にしたルールが発火しない | 無効化の指定が効かなくなる |
+| ultracite の各プリセットがルールを持っている | ultracite の export 構造が変わって空が混ざる |
+| **oxfmt に ultracite の整形設定が効いている** | **設定の書き方が変わり、エラーも出ないまま整形が素通りする**（過去に実際に発生） |
+
+最後の1つは、import を逆順にした一時ファイルを置いて `oxfmt --check` が
+「要整形」と判定するかで確かめている。プリセットが効いていないと素通りする
+（＝ exit 0 になる）ため、静かな失敗を検知できる。
+
+`fixtures/` は「本来なら指摘されるコード」を意図的に置いている検査用の資材で、
+lint をきれいに通す場所ではない。
+
 ## リリース
 
 npm には公開せず `github:tzwzx/expo-oxc-config` の Git URL 依存で消費する。
