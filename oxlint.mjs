@@ -39,7 +39,24 @@ export const rules = {
   "sort-imports": ["error", { ignoreDeclarationSort: true }],
   "unicorn/no-array-reverse": "off",
   "unicorn/no-array-sort": "off",
+  // React Compiler が Context value の安定参照を自動メモ化するため、手動メモ化を
+  // 促すこのルールは react-compiler-no-manual-memoization と矛盾する
+  "react/jsx-no-constructed-context-values": "off",
+  // oxlint の react-compiler は reanimated の共有値参照や Gesture.Pan() を
+  // コンポーネントと誤検出し、意図的な exhaustive-deps 抑制まで error にする。
+  // React Native の慣用パターンと相性が悪いためフリート全体で無効化する
+  "react/react-compiler": "off",
+  // このフリートは消費者向けモバイルアプリで暗号用途の乱数を持たない。
+  // Math.random は ID 生成・演出の抽選・シャッフルにのみ使う
+  // （暗号強度が要る箇所は expo-crypto を使う方針）
+  "sonarjs/pseudo-random": "off",
 };
+
+/** テストコードとみなすパス（jest の慣習に合わせる） */
+const TEST_FILES = [
+  "**/*.{test,spec}.{ts,tsx}",
+  "**/__tests__/**/*.{ts,tsx}",
+];
 
 export const overrides = [
   {
@@ -59,6 +76,95 @@ export const overrides = [
       "react-doctor/no-react19-deprecated-apis": "off",
       "react/display-name": "off",
       "sonarjs/function-name": "off",
+    },
+  },
+  {
+    // テストコード。プロダクトコードとは求めるものが違うため、可読性より
+    // 網羅性・素直さを優先する箇所のルールを緩める
+    files: TEST_FILES,
+    rules: {
+      // 逐次実行が読みやすいセットアップ、モック用の空実装、簡易な正規表現など
+      "eslint/no-await-in-loop": "off",
+      "eslint/no-empty-function": "off",
+      "eslint/no-inline-comments": "off",
+      "eslint/no-plusplus": "off",
+      "eslint/prefer-named-capture-group": "off",
+      "eslint/require-await": "off",
+      "eslint/require-unicode-regexp": "off",
+      "unicorn/no-await-expression-member": "off",
+      // ループ内の early return/break はテスト基盤の読みやすさに寄与する
+      "sonarjs/too-many-break-or-continue-in-loop": "off",
+      // 「既定値のまま」と「明示的に未設定へ上書きした」の区別そのものが検証対象に
+      // なるため（TypeScript では undefined と null は別物）
+      "sonarjs/no-undefined-assignment": "off",
+    },
+  },
+  {
+    // jest 由来のテスト品質ルール。ultracite の jest プリセットは overrides で
+    // 供給されるため後から上書きできず、フリートの慣習（test() 表記・日本語の
+    // テスト名・jest-expo が供給するグローバル）と噛み合わない。
+    // そのため必要なルールだけをここで opt-in する
+    files: TEST_FILES,
+    plugins: ["jest"],
+    rules: {
+      // フリートは test() で統一している（it() ではない）
+      "jest/consistent-test-it": ["error", { fn: "test", withinDescribe: "test" }],
+      "jest/expect-expect": "error",
+      "jest/no-alias-methods": "error",
+      "jest/no-conditional-expect": "error",
+      "jest/no-deprecated-functions": "error",
+      "jest/no-done-callback": "error",
+      "jest/no-duplicate-hooks": "error",
+      "jest/no-export": "error",
+      // 集中実行（fdescribe/fit）の commit を防ぐ
+      "jest/no-focused-tests": "error",
+      "jest/no-identical-title": "error",
+      "jest/no-interpolation-in-snapshots": "error",
+      "jest/no-jasmine-globals": "error",
+      "jest/no-mocks-import": "error",
+      "jest/no-standalone-expect": "error",
+      "jest/no-test-prefixes": "error",
+      "jest/no-test-return-statement": "error",
+      "jest/no-untyped-mock-factory": "error",
+      "jest/prefer-hooks-in-order": "error",
+      "jest/prefer-hooks-on-top": "error",
+      "jest/prefer-spy-on": "error",
+      "jest/prefer-to-be": "error",
+      "jest/prefer-to-contain": "error",
+      "jest/prefer-to-have-length": "error",
+      "jest/valid-describe-callback": "error",
+      "jest/valid-expect": "error",
+      "jest/valid-expect-in-promise": "error",
+      "jest/valid-title": "error",
+      // テストの無効化は削除ではなくコメントアウトする、という規約があるため
+      "jest/no-commented-out-tests": "off",
+    },
+  },
+  {
+    // expo-router の予約エクスポート名 `unstable_settings`（initialRouteName を
+    // 宣言する唯一の手段）。Router が名前で読み取るためリネームできない
+    files: ["src/app/**/_layout.tsx"],
+    rules: {
+      "sonarjs/variable-name": "off",
+    },
+  },
+  {
+    // 開発用スクリプト（アプリのバンドルには入らない）。ESM の __dirname シムや
+    // データ変換など本質的に複雑な処理を含むため一部ルールを緩める
+    files: ["scripts/**/*.{ts,tsx}"],
+    rules: {
+      "sonarjs/cognitive-complexity": "off",
+      "sonarjs/too-many-break-or-continue-in-loop": "off",
+      "sonarjs/variable-name": "off",
+    },
+  },
+  {
+    // E2E（Maestro / Playwright）のヘルパー。React のフックではないが
+    // use* 命名のユーティリティを持つため rules-of-hooks が誤検出する
+    files: ["e2e/**/*.{ts,tsx}"],
+    rules: {
+      "eslint-plugin-react-hooks/rules-of-hooks": "off",
+      "sonarjs/too-many-break-or-continue-in-loop": "off",
     },
   },
 ];
