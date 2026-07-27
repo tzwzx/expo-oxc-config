@@ -40,30 +40,28 @@ oxlint の JS プラグイン API はまだ `plugins-dev` 名義の不安定な�
 ```
 
 ```ts
-// oxlint.config.ts（各アプリ）
-import { buildConfig } from "@tzwzx/expo-oxc-config/oxlint";
-import { defineConfig } from "oxlint";
+// oxlint.config.ts（各アプリ）— oxlint を import しない
+import { defineConfig } from "@tzwzx/expo-oxc-config/oxlint";
 
-export default defineConfig(
-  buildConfig({
-    // アプリ固有分だけを書く
-    ignorePatterns: ["store-shots/**"],
-    overrides: [],
-    rules: {},
-  })
-);
+export default defineConfig({
+  // アプリ固有分だけを書く
+  ignorePatterns: ["store-shots/**"],
+  overrides: [],
+  rules: {},
+});
 ```
 
 ```ts
-// oxfmt.config.ts（各アプリ）
-import { buildConfig } from "@tzwzx/expo-oxc-config/oxfmt";
-import { defineConfig } from "oxfmt";
+// oxfmt.config.ts（各アプリ）— oxfmt を import しない
+import { defineConfig } from "@tzwzx/expo-oxc-config/oxfmt";
 
-export default defineConfig(buildConfig({ ignorePatterns: [] }));
+export default defineConfig({ ignorePatterns: [] });
 ```
 
-`fallow` は設定ファイルからの import を解析しないため、各アプリの
-`.fallowrc.jsonc` の `ignoreDependencies` に `@tzwzx/expo-oxc-config` を入れておく。
+アプリが import するのは本パッケージだけなので、`fallow` の
+「未宣言の依存」検出とも整合する。ただし `oxlint.config.ts` は
+fallow が宣言済み依存からツールを検出する都合で到達不能扱いになるため、
+各アプリの `.fallowrc.jsonc` の `entry` に加えておくこと。
 
 ## アプリ側に残す例外
 

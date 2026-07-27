@@ -1,5 +1,9 @@
 // フリート共通の oxlint 設定。各アプリの oxlint.config.ts は
-// `defineConfig(buildConfig({ ...アプリ固有分 }))` だけを書く。
+// `defineConfig({ ...アプリ固有分 })` だけを書く。
+//
+// oxlint 本体の import をここに閉じ込めることで、アプリ側は oxlint を
+// 直接参照しなくて済む（＝アプリの package.json に oxlint を書かなくてよい）。
+import { defineConfig as defineOxlintConfig } from "oxlint";
 import core from "ultracite/oxlint/core";
 import jsPlugins from "ultracite/oxlint/js-plugins";
 import react from "ultracite/oxlint/react";
@@ -61,6 +65,7 @@ export const overrides = [
 
 /**
  * 共通設定にアプリ固有分をマージした config オブジェクトを返す。
+ * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
  * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app
  */
 export function buildConfig(app = {}) {
@@ -70,4 +75,13 @@ export function buildConfig(app = {}) {
     overrides: [...overrides, ...(app.overrides ?? [])],
     rules: { ...rules, ...(app.rules ?? {}) },
   };
+}
+
+/**
+ * 共通設定にアプリ固有分をマージして oxlint の設定として返す。
+ * 各アプリの oxlint.config.ts はこれを default export するだけでよい。
+ * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app
+ */
+export function defineConfig(app = {}) {
+  return defineOxlintConfig(buildConfig(app));
 }

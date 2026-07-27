@@ -1,9 +1,14 @@
 // フリート共通の oxfmt 設定。oxfmt は extends を解釈しない（メンテナ方針）ため、
-// スプレッド用のオブジェクト + マージヘルパーとして提供する。
+// スプレッドで組み立てるヘルパーとして提供する。
+//
+// oxfmt 本体の import をここに閉じ込めることで、アプリ側は oxfmt を
+// 直接参照しなくて済む（＝アプリの package.json に oxfmt を書かなくてよい）。
+import { defineConfig as defineOxfmtConfig } from "oxfmt";
 import ultracite from "ultracite/oxfmt";
 
 /**
  * ultracite プリセットにアプリ固有の ignorePatterns をマージした config を返す。
+ * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
  * @param {{ ignorePatterns?: string[] }} app
  */
 export function buildConfig(app = {}) {
@@ -16,4 +21,11 @@ export function buildConfig(app = {}) {
   };
 }
 
-export default buildConfig();
+/**
+ * 共通設定にアプリ固有分をマージして oxfmt の設定として返す。
+ * 各アプリの oxfmt.config.ts はこれを default export するだけでよい。
+ * @param {{ ignorePatterns?: string[] }} app
+ */
+export function defineConfig(app = {}) {
+  return defineOxfmtConfig(buildConfig(app));
+}

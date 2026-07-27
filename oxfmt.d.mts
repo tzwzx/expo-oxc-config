@@ -1,7 +1,11 @@
 import type { Oxfmtrc } from "oxfmt";
 
-/** ultracite プリセットにアプリ固有の ignorePatterns をマージした config を返す。 */
-export declare function buildConfig(app?: { ignorePatterns?: string[] }): Oxfmtrc;
+interface AppOxfmtConfig {
+  ignorePatterns?: string[];
+}
 
-declare const config: Oxfmtrc;
-export default config;
+/** ultracite プリセットにアプリ固有の ignorePatterns をマージした config を返す。 */
+export declare function buildConfig(app?: AppOxfmtConfig): Oxfmtrc;
+
+/** 共通設定にアプリ固有分をマージして oxfmt の設定として返す。 */
+export declare function defineConfig(app?: AppOxfmtConfig): Oxfmtrc;
