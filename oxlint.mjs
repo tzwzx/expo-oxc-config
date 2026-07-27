@@ -115,7 +115,9 @@ export const overrides = [
     rules: {
       // フリートは test() で統一している（it() ではない）
       "jest/consistent-test-it": ["error", { fn: "test", withinDescribe: "test" }],
-      "jest/expect-expect": "error",
+      // `expectPressedStyle(...)` のように expect 接頭辞で自作した
+      // アサーションヘルパーも「検証している」とみなす
+      "jest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*"] }],
       "jest/no-alias-methods": "error",
       "jest/no-deprecated-functions": "error",
       "jest/no-done-callback": "error",
