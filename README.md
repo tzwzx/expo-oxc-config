@@ -1,54 +1,81 @@
 # @tzwzx/expo-oxc-config
 
-tazawa の Expo アプリ群で共有する oxlint / oxfmt 設定。ultracite をラップし、次を一元化する:
+tazawa の Expo アプリ群で共有する **oxlint / oxfmt のツールチェーン一式と設定**。
 
-- `extends: [core, react, jsPlugins]`（github / sonarjs / react-doctor プラグインをフリート標準で有効化）
-- **ignorePatterns の再宣言**（oxlint の `extends` は ignorePatterns をマージしない — 実測確認済み。放置すると `**/*.gen.*` / `**/dist` 等が lint 対象になる）
-- `src/` の `no-use-before-define` 緩和（RN の「コンポーネントを末尾定義」慣例対応）
-- `sort-imports`（ignoreDeclarationSort）
+このパッケージ1つを devDependencies に入れれば、`oxlint` / `oxfmt` コマンドと
+共有ルールがまとめて入る。アプリ側は**コマンドを叩くだけ**でよい。
+
+## 何を持っているか
+
+| 種別 | 中身 |
+|---|---|
+| ツール本体 | `oxlint` / `oxfmt` の CLI（bun が推移的依存の bin もルートの `.bin` に張るため、アプリから直接実行できる） |
+| プリセット | `ultracite` と、それが参照する `eslint-plugin-github` / `eslint-plugin-sonarjs` / `oxlint-plugin-react-doctor` |
+| 共有ルール | `extends: [core, react, jsPlugins]` / **ignorePatterns の再宣言**（oxlint の `extends` はこれをマージしないため必須）/ Expo Router・Hermes・RN 慣習に由来する共通ルール |
+
+## なぜツール本体まで持つのか
+
+oxlint の JS プラグイン API はまだ `plugins-dev` 名義の不安定な面で、
+`oxlint-plugin-react-doctor` は oxlint への peerDependency を宣言していない。
+つまり **oxlint とプラグインのバージョン不整合を誰も検知できない**。
+
+アプリ側に oxlint を置くと、各リポで `bun update` した時にツール本体だけが上がり、
+共有側のプラグインが取り残されて静かに壊れうる。ツール・プリセット・プラグイン・
+ルールは必ず一緒に動く必要があるので、**まとめてこのパッケージが所有する**。
+
+更新はこのリポジトリで一度だけ行い、各アプリは
+`bun update @tzwzx/expo-oxc-config` で追従する。
 
 ## 使い方
 
+```jsonc
+// アプリの package.json — oxlint / oxfmt / ultracite は書かない
+"devDependencies": {
+  "@tzwzx/expo-oxc-config": "github:tzwzx/expo-oxc-config"
+},
+"scripts": {
+  "lint": "oxfmt --check && oxlint",
+  "fix": "oxfmt && oxlint --fix"
+}
+```
+
 ```ts
 // oxlint.config.ts（各アプリ）
-import { defineConfig } from "oxlint";
 import { buildConfig } from "@tzwzx/expo-oxc-config/oxlint";
+import { defineConfig } from "oxlint";
 
 export default defineConfig(
   buildConfig({
     // アプリ固有分だけを書く
     ignorePatterns: ["store-shots/**"],
-    rules: {
-      "react/style-prop-object": ["error", { allow: ["StatusBar"] }],
-    },
-  }),
+    overrides: [],
+    rules: {},
+  })
 );
 ```
 
 ```ts
 // oxfmt.config.ts（各アプリ）
-import { defineConfig } from "oxfmt";
 import { buildConfig } from "@tzwzx/expo-oxc-config/oxfmt";
+import { defineConfig } from "oxfmt";
 
-export default defineConfig(
-  buildConfig({ ignorePatterns: ["store-shots/output/**"] }),
-);
+export default defineConfig(buildConfig({ ignorePatterns: [] }));
 ```
 
-## 検討メモ（標準へ入れるか未決のルール）
+`fallow` は設定ファイルからの import を解析しないため、各アプリの
+`.fallowrc.jsonc` の `ignoreDependencies` に `@tzwzx/expo-oxc-config` を入れておく。
 
-- `unicorn/no-array-sort` / `unicorn/no-array-reverse` off（Hermes が `toSorted` / `toReversed` 未対応 — shikaku-collection で採用中。Hermes が対応したら不要になるため、現状はアプリ側判断）
-- `react/jsx-no-constructed-context-values` off（React Compiler 前提 — shikaku-collection で採用中。Compiler の有効状況がリポで揃ったら標準化を検討）
-- `no-use-before-define` のルール ID は `eslint/` プレフィックス付きと bare が混在していた（widget-now は bare）。**このパッケージ導入時に、プレフィックス付きで実際に効いているか各リポで実測確認すること**（oxlint の版によって解決挙動が異なる可能性がある）
+## アプリ側に残す例外
 
-## 配布（npm には公開しない）
+ルールの off は「スコープを絞った `overrides` + 恒久的に妥当な理由」または
+「該当1行の `oxlint-disable-next-line` + 理由」のいずれかにする。
+「あとで直す」類の暫定 off は置かない。
 
-GitHub リポジトリを直接依存として消費する（`agent-session-gate` と同方式）:
+フリート共通で妥当と確認済みの例外（`unstable_settings` の命名、非暗号用途の
+`Math.random`、TS optional 型への `undefined` 代入など）は
+`my-unify-expo-config` スキルの `references/standards.md` を参照。
 
-```jsonc
-// 各アプリの package.json devDependencies
-"@tzwzx/expo-oxc-config": "github:tzwzx/expo-oxc-config"
-```
+## リリース
 
-- バージョンを固定したい場合はタグ/コミットを付ける: `github:tzwzx/expo-oxc-config#v0.1.0`
-- ultracite / oxlint / oxfmt は peerDependencies（バージョンは各アプリが管理）
+npm には公開せず `github:tzwzx/expo-oxc-config` の Git URL 依存で消費する。
+バージョンを固定したい場合はタグを付けて `#v0.2.0` のように参照する。
