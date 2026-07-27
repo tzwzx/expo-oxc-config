@@ -76,6 +76,20 @@ export const overrides = [
       "react-doctor/no-react19-deprecated-apis": "off",
       "react/display-name": "off",
       "sonarjs/function-name": "off",
+      // jest.mock のファクトリは巻き上げられるため ESM import を使えず、
+      // 各パッケージ公式モックの読み込みに require が必須
+      "node/global-require": "off",
+      "unicorn/prefer-module": "off",
+    },
+  },
+  {
+    // Expo の設定ファイル。Node のコンテキストで評価されるため CommonJS 由来の
+    // API（__dirname など）を使い、Expo の慣例として無名の default export で書く
+    files: ["app.config.ts"],
+    rules: {
+      "node/global-require": "off",
+      "unicorn/no-anonymous-default-export": "off",
+      "unicorn/prefer-module": "off",
     },
   },
   {
