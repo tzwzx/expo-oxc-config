@@ -21,6 +21,12 @@ export const rules = {
   "react-doctor/js-tosorted-immutable": "off",
   // Expo Router アプリのため、Next.js 前提のクライアントサイドリダイレクト検査は対象外
   "react-doctor/nextjs-no-client-side-redirect": "off",
+  // react-navigation の headerLeft/headerRight は「要素を返す関数」を受け取る API のため、
+  // props 経由のコンポーネント生成を許可する
+  "react/no-unstable-nested-components": ["error", { allowAsProps: true }],
+  // expo-status-bar の StatusBar は style prop に文字列 enum（"auto" | "light" | "dark"）を
+  // 取るため、オブジェクト限定チェックから除外する
+  "react/style-prop-object": ["error", { allow: ["StatusBar"] }],
   // Expo/RN 慣習の名前空間 import（例: `import * as Haptics`）と衝突するため無効化
   "sonarjs/no-wildcard-import": "off",
   // React コンポーネントの function 宣言（PascalCase）を許容する
