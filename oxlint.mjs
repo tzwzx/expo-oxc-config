@@ -23,6 +23,9 @@ export const rules = {
   "react-doctor/nextjs-no-client-side-redirect": "off",
   // Expo/RN 慣習の名前空間 import（例: `import * as Haptics`）と衝突するため無効化
   "sonarjs/no-wildcard-import": "off",
+  // React コンポーネントの function 宣言（PascalCase）を許容する
+  // （既定の '^[_a-z][a-zA-Z0-9]*$' はコンポーネントを誤検知する）
+  "sonarjs/function-name": ["error", { format: "^_?[a-zA-Z][a-zA-Z0-9]*$" }],
   "sort-imports": ["error", { ignoreDeclarationSort: true }],
   "unicorn/no-array-reverse": "off",
   "unicorn/no-array-sort": "off",
@@ -36,6 +39,16 @@ export const overrides = [
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "no-use-before-define": ["error", { functions: false, variables: false }],
+    },
+  },
+  {
+    // テストセットアップのモック群。React コンポーネントとして PascalCase 必須、
+    // displayName 省略や実 API 互換のための forwardRef 使用も許容する
+    files: ["jest.setup.ts"],
+    rules: {
+      "react-doctor/no-react19-deprecated-apis": "off",
+      "react/display-name": "off",
+      "sonarjs/function-name": "off",
     },
   },
 ];
