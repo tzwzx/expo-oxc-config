@@ -25,7 +25,6 @@
   },
   "scripts": {
     "verify": "bun scripts/verify.ts",
-    "rulesync": "bunx rulesync generate && .rulesync/scripts/post-generate.sh",
-    "postinstall": "bunx rulesync install && bun rulesync"
+    "rulesync": "bunx rulesync install && bunx rulesync generate && .rulesync/scripts/post-generate.sh"
   }
 }

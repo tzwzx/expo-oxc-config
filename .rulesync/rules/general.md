@@ -31,11 +31,20 @@ Expo アプリ7本（expo-boilerplate / kata / shikaku-collection / sync / widge
 - **アプリ側から `oxlint` / `oxfmt` を import させない。** 本パッケージの `defineConfig` が唯一の入口。アプリが直接 import すると、package.json に無い依存を参照することになり fallow の未宣言依存検出と矛盾する
 - **`fixtures/` は「本来なら指摘されるコード」を意図的に置いている。** lint をきれいに通す場所ではないので、ここのコードを"直して"はいけない
 
-## 検証
+## コマンド
 
 ```bash
-bun verify   # ツールチェーンが壊れていないかのスモークテスト
+bun verify    # ツールチェーンが壊れていないかのスモークテスト
+bun rulesync  # 共有ルールの取得と AI 設定の生成（.rulesync/ を編集したら実行する）
 ```
+
+**`postinstall` は置かない。** このリポジトリは他アプリの依存として install されるため、
+lifecycle スクリプトを持つとアプリ側の `bun install` で「Blocked 1 postinstall」の警告が出る
+（bun は依存の postinstall を既定でブロックするので実害は無いが、信頼設定を入れると
+node_modules 内で rulesync が走ってしまう）。クローン直後は `bun rulesync` を手で実行する。
+
+なお **git 依存では `files` フィールドが効かず**、リポジトリ全体がアプリの node_modules へ入る。
+配布物を絞りたい場合はこの前提で考えること（現状は数十 KB なので許容している）。
 
 ルールの追加・改名・挙動変更は許容する（アプリ側で追従すればよい）。
 `bun verify` が捕まえるのは「まともに動かない状態のまま配ってしまう」ことだけ。
