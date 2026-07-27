@@ -97,6 +97,12 @@ export const overrides = [
       // 「既定値のまま」と「明示的に未設定へ上書きした」の区別そのものが検証対象に
       // なるため（TypeScript では undefined と null は別物）
       "sonarjs/no-undefined-assignment": "off",
+      // `jest.mock<typeof import("...")>(...)` はモックファクトリに型を付ける
+      // 定石で、jest/no-untyped-mock-factory の自動修正もこの形を生成する。
+      // インラインの import() 型注釈を禁じるこのルールと直接衝突するため、
+      // テストコードでは無効にする（モジュールごとに import type * as を
+      // 足す形にすると、モック対象1つにつき1行の重複が増えるだけになる）
+      "typescript/consistent-type-imports": "off",
     },
   },
   {
