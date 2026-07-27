@@ -1,0 +1,23 @@
+{
+  "name": "@tzwzx/expo-oxc-config",
+  "version": "0.1.0",
+  "description": "Shared oxlint/oxfmt config for tazawa's Expo apps (ultracite wrapper with ignorePatterns fix and common rules)",
+  "license": "MIT",
+  "repository": "github:tzwzx/expo-oxc-config",
+  "type": "module",
+  "exports": {
+    "./oxlint": "./oxlint.mjs",
+    "./oxfmt": "./oxfmt.mjs"
+  },
+  "files": [
+    "oxlint.mjs",
+    "oxlint.d.mts",
+    "oxfmt.mjs",
+    "oxfmt.d.mts"
+  ],
+  "peerDependencies": {
+    "oxfmt": "*",
+    "oxlint": "*",
+    "ultracite": "*"
+  }
+}
