@@ -132,7 +132,6 @@ export const overrides = [
       "jest/no-standalone-expect": "error",
       "jest/no-test-prefixes": "error",
       "jest/no-test-return-statement": "error",
-      "jest/no-untyped-mock-factory": "error",
       "jest/prefer-hooks-in-order": "error",
       "jest/prefer-hooks-on-top": "error",
       "jest/prefer-spy-on": "error",
@@ -145,6 +144,11 @@ export const overrides = [
       "jest/valid-title": "error",
       // テストの無効化は削除ではなくコメントアウトする、という規約があるため
       "jest/no-commented-out-tests": "off",
+      // 自動修正が `jest.mock<typeof import("m")>(...)` を生成するが、これは
+      // ファクトリがモジュール全体の型を満たすことを要求する。RN / Expo の
+      // テストでは必要な export だけを返す部分モックが常道で、型エラーになる
+      // （実測: 7アプリの37箇所すべてが部分モックで tsc が通らなくなった）
+      "jest/no-untyped-mock-factory": "off",
       // TypeScript の判別可能ユニオンを絞り込む `if` を「条件付きアサーション」と
       // 誤検出する。`expect(r.found).toBe(true); if (r.found) { expect(r.data)... }` の
       // ように、直前で表明した内容を型として絞るための if が対象になってしまう
