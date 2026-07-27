@@ -93,6 +93,20 @@ bun install
 
    警告が出ていないか確認し、出ていれば新しい書き方へ移す。
 
+5. **不要になった抑止コメントが残っていないか**
+
+   ```bash
+   cd ../expo-boilerplate && bun lint   # 各アプリの lint に検出が組み込んである
+   ```
+
+   `--report-unused-disable-directives-severity=error` が各アプリの `lint`
+   スクリプトに入っている。ルールの無効化を共有側へ足すと、各アプリの
+   インライン抑止が不要になることがあるので、更新後は各アプリの lint で拾う。
+
+   ※ 設定ファイルの `reportUnusedDisableDirectives` は oxlint 1.76 時点では
+   スキーマにあるだけで**実装が未対応**（`unknown field` で config のパースに失敗する）。
+   将来対応されたら共有設定へ移して CLI フラグを畳めるので、更新時に再確認すること。
+
 ### ルールを追加・変更するときの既知の罠
 
 過去にここで踏んだもの。同じ調査を繰り返さないこと。
