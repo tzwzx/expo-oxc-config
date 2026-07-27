@@ -1,0 +1,28 @@
+{
+  "lockfileVersion": 1,
+  "sources": {
+    "tzwzx/expo-ai-standards": {
+      "requestedRef": "main",
+      "resolvedRef": "058402ad0fb67ff67aa92e909abba54633fd183b",
+      "resolvedAt": "2026-07-27T19:02:47.052Z",
+      "skills": {},
+      "rules": {
+        "ja-commit-message": {
+          "integrity": "sha256-64a0609618f1ffaaf86e5a56ce28bb99676facb32136c2bf36d40fd89ed30bfc"
+        },
+        "ja-package-management": {
+          "integrity": "sha256-1fb878876874ee4513b538197e894d01bfe6ba2169f68e0b59410d502d5e563a"
+        }
+      },
+      "ruleSelection": [
+        "ja-commit-message",
+        "ja-package-management"
+      ],
+      "rulesPath": "rules",
+      "resolvedRuleNames": [
+        "ja-commit-message",
+        "ja-package-management"
+      ]
+    }
+  }
+}

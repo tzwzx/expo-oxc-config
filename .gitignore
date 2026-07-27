@@ -1,0 +1,19 @@
+node_modules/
+
+# rulesync の生成物（編集元は .rulesync/ 配下）
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+AGENTS.local.md
+.claude/*
+!.claude/settings.local.json
+.cursor/
+.codex/
+.agents/
+.rulesync/rules/*.local.md
+.rulesync/rules/.curated/
+.rulesync/skills/.curated/
+rulesync.local.jsonc
+
+# verify が一時的に作る検査用ファイル
+fixtures/.verify-probe.ts
