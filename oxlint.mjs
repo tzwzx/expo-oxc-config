@@ -117,7 +117,6 @@ export const overrides = [
       "jest/consistent-test-it": ["error", { fn: "test", withinDescribe: "test" }],
       "jest/expect-expect": "error",
       "jest/no-alias-methods": "error",
-      "jest/no-conditional-expect": "error",
       "jest/no-deprecated-functions": "error",
       "jest/no-done-callback": "error",
       "jest/no-duplicate-hooks": "error",
@@ -144,6 +143,13 @@ export const overrides = [
       "jest/valid-title": "error",
       // テストの無効化は削除ではなくコメントアウトする、という規約があるため
       "jest/no-commented-out-tests": "off",
+      // TypeScript の判別可能ユニオンを絞り込む `if` を「条件付きアサーション」と
+      // 誤検出する。`expect(r.found).toBe(true); if (r.found) { expect(r.data)... }` の
+      // ように、直前で表明した内容を型として絞るための if が対象になってしまう
+      // （フリート7アプリの全29件を確認したところ、すべてこの絞り込みだった）。
+      // 本来の対象である try/catch でのアサーション握り潰しも一緒に見逃す点は
+      // 承知のうえで無効化する
+      "jest/no-conditional-expect": "off",
     },
   },
   {
