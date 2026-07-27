@@ -13,19 +13,29 @@ export const presets = [core, react, jsPlugins];
 export const ignorePatterns = [...(core.ignorePatterns ?? [])];
 
 export const rules = {
+  // Expo Router の特殊ファイル名（_layout, [id], (group), +not-found 等）と
+  // kebab-case 強制ルールが衝突するため無効化
+  "github/filenames-match-regex": "off",
+  // Hermes（Expo SDK 57 / RN 0.86）が toSorted() / toReversed() 未対応のため、
+  // 不変メソッドへの書き換えを促す指摘・自動変換を無効化する
+  "react-doctor/js-tosorted-immutable": "off",
+  // Expo Router アプリのため、Next.js 前提のクライアントサイドリダイレクト検査は対象外
+  "react-doctor/nextjs-no-client-side-redirect": "off",
+  // Expo/RN 慣習の名前空間 import（例: `import * as Haptics`）と衝突するため無効化
+  "sonarjs/no-wildcard-import": "off",
   "sort-imports": ["error", { ignoreDeclarationSort: true }],
+  "unicorn/no-array-reverse": "off",
+  "unicorn/no-array-sort": "off",
 };
 
 export const overrides = [
   {
     // React Native では StyleSheet.create() やコンポーネントをファイル末尾に定義する
-    // 慣例のため、変数・関数の前方参照を許可し、クラス等の前方参照は検出する
+    // 慣例のため、変数・関数の前方参照を許可し、クラス等の前方参照は検出する。
+    // ルール ID は接頭辞なしの bare 形式（typescript/ 等の誤 ID だと無効果 — sync で実測済み）
     files: ["src/**/*.{ts,tsx}"],
     rules: {
-      "eslint/no-use-before-define": [
-        "error",
-        { functions: false, variables: false },
-      ],
+      "no-use-before-define": ["error", { functions: false, variables: false }],
     },
   },
 ];
