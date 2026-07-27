@@ -19,5 +19,10 @@
     "oxfmt": "*",
     "oxlint": "*",
     "ultracite": "*"
+  },
+  "dependencies": {
+    "eslint-plugin-github": "6.1.1",
+    "eslint-plugin-sonarjs": "4.2.0",
+    "oxlint-plugin-react-doctor": "0.9.2"
   }
 }
