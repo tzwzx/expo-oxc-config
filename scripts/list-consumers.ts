@@ -6,20 +6,21 @@
 //
 // 使い方:
 //   for d in $(bun scripts/list-consumers.ts); do ... done
-import { readdirSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 
-const SELF_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const SELF_DIR = path.resolve(import.meta.dirname, "..");
 const PACKAGE_NAME = JSON.parse(
-  readFileSync(join(SELF_DIR, "package.json"), "utf8")
+  readFileSync(path.join(SELF_DIR, "package.json"), "utf-8")
 ).name as string;
-const SEARCH_ROOT = resolve(SELF_DIR, "..");
+const SEARCH_ROOT = path.resolve(SELF_DIR, "..");
 
 /** package.json が PACKAGE_NAME に依存していれば true */
 const dependsOnSelf = (dir: string): boolean => {
   try {
-    const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
+    const pkg = JSON.parse(
+      readFileSync(path.join(dir, "package.json"), "utf-8")
+    ) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
     };
@@ -34,7 +35,7 @@ const dependsOnSelf = (dir: string): boolean => {
 
 const consumers = readdirSync(SEARCH_ROOT, { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && entry.name !== "node_modules")
-  .map((entry) => join(SEARCH_ROOT, entry.name))
+  .map((entry) => path.join(SEARCH_ROOT, entry.name))
   .filter((dir) => dir !== SELF_DIR && dependsOnSelf(dir))
   .sort((a, b) => a.localeCompare(b));
 
