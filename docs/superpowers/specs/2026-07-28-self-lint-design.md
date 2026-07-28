@@ -89,12 +89,18 @@ export default defineConfig({ ignorePatterns: ["fixtures/**"] });
 ```jsonc
 "lint": "oxfmt --check && oxlint --report-unused-disable-directives-severity=error",
 "fix": "oxfmt && oxlint --fix",
-"rulesync:check": "bunx rulesync install --frozen && bunx rulesync generate --check && .rulesync/scripts/post-generate.sh && git diff --exit-code -- rulesync.lock .cursorrules"
+"rulesync:check": "bunx rulesync install --frozen && bunx rulesync generate && .rulesync/scripts/post-generate.sh && git diff --exit-code -- rulesync.lock .cursorrules"
 ```
 
 `lint` / `fix` は消費側アプリと同じ命名・同じ内容にする。
 
-`rulesync:check` は消費側アプリ版に `.rulesync/scripts/post-generate.sh` を 1 つ足している。このリポジトリで git 管理されている rulesync 生成物は `.cursorrules` と `rulesync.lock` の 2 つだけで、`.cursorrules` は `rulesync generate` ではなく post-generate.sh が書き出すため、これを走らせないと差分検出にならない。
+`rulesync:check` は消費側アプリ版から 2 点変えている。
+
+1 点目は `.rulesync/scripts/post-generate.sh` を挟むこと。このリポジトリで git 管理されている rulesync 生成物は `.cursorrules` と `rulesync.lock` の 2 つだけで、`.cursorrules` は `rulesync generate` ではなく post-generate.sh が書き出すため、これを走らせないと差分検出にならない。
+
+2 点目は `generate --check` ではなく素の `generate` を使うこと。`--check` は「生成結果がディスク上のファイルと一致するか」を見るが、`AGENTS.md` / `CLAUDE.md` / `.claude/*` は gitignore されていて git 追跡されていない。そのため CI のクリーンチェックアウトには存在せず、`--check` は必ず `Files are not up to date` で落ちる（クリーンクローンで実測確認）。実際に生成してから `git diff --exit-code` で追跡対象の差分だけを見る形にすれば、gitignore された生成物が CI に無くても正しく動き、検出したい対象（`.cursorrules` / `rulesync.lock` の古さ）はそのまま拾える。
+
+なお**消費側アプリ 7 本すべてが `generate --check` を使っており、同じ潜在バグを抱えている**（生成物の gitignore 状況も同一であることを確認済み）。これらの修正は本作業のスコープ外。
 
 ### 5. CI（GitHub Actions）
 
