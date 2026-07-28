@@ -1,0 +1,11 @@
+name: Lint
+
+on: [push]
+
+jobs:
+  lint:
+    uses: tzwzx/expo-workflows/.github/workflows/lint.yml@main
+    with:
+      commands: |
+        bun rulesync:check
+        bun lint

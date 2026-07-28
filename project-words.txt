@@ -2,6 +2,7 @@ bunx
 claudecode
 codesweep
 codexcli
+cursorrules
 fallowrc
 fdescribe
 oxfmtrc
