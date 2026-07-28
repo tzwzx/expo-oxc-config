@@ -38,7 +38,7 @@ export default defineConfig({
   ignorePatterns: ["fixtures/**"],
   overrides: [
     {
-      files: ["scripts/**/*.ts"],
+      files: ["scripts/verify.ts"],
       rules: { "sonarjs/no-os-command-from-path": "off" },
     },
   ],
@@ -46,7 +46,7 @@ export default defineConfig({
 ```
 
 - `fixtures/**` を除外する。fixtures は「本来なら指摘されるコード」を意図的に置いている場所で、lint をきれいに通す場所ではない
-- `sonarjs/no-os-command-from-path` は `scripts/verify.ts` の `spawnSync("oxlint", ...)` / `spawnSync("oxfmt", ...)` に対する指摘。verify は「アプリと同じように PATH（`node_modules/.bin`）からツールを起動できること」自体を検証しているため、絶対パス化すると検証が弱くなる。`scripts/**` に限定して無効化する
+- `sonarjs/no-os-command-from-path` は `scripts/verify.ts` の `spawnSync("oxlint", ...)` / `spawnSync("oxfmt", ...)` に対する指摘。verify は「アプリと同じように PATH（`node_modules/.bin`）からツールを起動できること」自体を検証しているため、絶対パス化すると検証が弱くなる。この理由が立つのは verify.ts だけなので `scripts/verify.ts` に限定して無効化する（`scripts/**` へ広げると、将来 PATH 経由でコマンドを叩く別スクリプトを足したときに検出が効かなくなる）
 
 ### 2. `oxfmt.config.ts`（新規・root）
 
@@ -87,12 +87,12 @@ export default defineConfig({ ignorePatterns: ["fixtures/**"] });
 ### 4. `package.json` にスクリプトを追加する
 
 ```jsonc
-"lint": "oxfmt --check && oxlint --report-unused-disable-directives-severity=error",
-"fix": "oxfmt && oxlint --fix",
+"lint": "oxfmt --check --disable-nested-config && oxlint --disable-nested-config --report-unused-disable-directives-severity=error",
+"fix": "oxfmt --disable-nested-config && oxlint --disable-nested-config --fix",
 "rulesync:check": "bunx rulesync install --frozen && bunx rulesync generate && .rulesync/scripts/post-generate.sh && git diff --exit-code -- rulesync.lock .cursorrules"
 ```
 
-`lint` / `fix` は消費側アプリと同じ命名・同じ内容にする。
+`lint` / `fix` は消費側アプリと同じ命名にするが、**`--disable-nested-config` の1語だけフリートとずれる**。`fixtures/` が自前の `oxlint.config.ts` / `oxfmt.config.ts` を持っており、oxlint / oxfmt は既定でこれを nested config として優先するので、このフラグが無いと root の `ignorePatterns: ["fixtures/**"]` が fixtures に届かない（消費側アプリには nested config が無いのでフラグ自体が不要）。**「フリートと揃っていない」という理由でこのフラグを外さないこと。**
 
 `rulesync:check` は消費側アプリ版から 2 点変えている。
 
