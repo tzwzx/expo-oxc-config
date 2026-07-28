@@ -5,6 +5,16 @@ tazawa の Expo アプリ群で共有する **oxlint / oxfmt のツールチェ�
 このパッケージ1つを devDependencies に入れれば、`oxlint` / `oxfmt` コマンドと
 共有ルールがまとめて入る。アプリ側は**コマンドを叩くだけ**でよい。
 
+> 🤖 **このリポジトリを変更する前に読むもの**
+> - [`.rulesync/rules/general.md`](.rulesync/rules/general.md) — 破ると静かに壊れる罠（ここが最優先）
+> - [`.rulesync/skills/update-toolchain/SKILL.md`](.rulesync/skills/update-toolchain/SKILL.md)
+>   — パッケージ更新・ルール追加・設定スリム化の全手順と判断基準
+>
+> どちらも rulesync の**編集元**。`AGENTS.md` / `.claude/skills/` は `bun rulesync` の生成物で
+> gitignore 対象なので、クローン直後には存在しない（生成物を直接編集しないこと）。
+>
+> ここの変更は **Expo アプリ7本すべてに一斉に効く**。`bun verify` を通さずに push しないこと。
+
 ## 何を持っているか
 
 | 種別 | 中身 |
@@ -34,7 +44,8 @@ oxlint の JS プラグイン API はまだ `plugins-dev` 名義の不安定な�
   "@tzwzx/expo-oxc-config": "github:tzwzx/expo-oxc-config"
 },
 "scripts": {
-  "lint": "oxfmt --check && oxlint",
+  // --report-unused-disable-directives-severity=error で不要になった抑止コメントを検出する
+  "lint": "oxfmt --check && oxlint --report-unused-disable-directives-severity=error",
   "fix": "oxfmt && oxlint --fix"
 }
 ```
