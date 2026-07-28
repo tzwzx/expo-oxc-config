@@ -1,0 +1,12 @@
+bunx
+claudecode
+codesweep
+codexcli
+fallowrc
+fdescribe
+oxfmtrc
+oxlint
+rulesync
+tosorted
+tzwzx
+ultracite
