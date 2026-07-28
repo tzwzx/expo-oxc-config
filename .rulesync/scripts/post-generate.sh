@@ -2,8 +2,10 @@
 # rulesync generate 後の追加処理
 set -euo pipefail
 
-# CLAUDE.md を AGENTS.md への import ブリッジにする（Claude Code 公式推奨）
-printf '@AGENTS.md\n' > CLAUDE.md
+# CLAUDE.md は rulesync が claudecode target で直接生成する（root ルールのみ）。
+# 以前ここで '@AGENTS.md' へのインポートブリッジに上書きしていたが、それをすると
+# 全文 fold された AGENTS.md がロードされ、.claude/rules/ の path スコープが
+# 効かなくなる（かつ二重ロードになる）ため廃止した。
 
 # Cursor のコミットメッセージ生成（✨）に効くのは .cursorrules だけのため、
 # 共有ソースの commit-message 正本から frontmatter を剥がして生成する

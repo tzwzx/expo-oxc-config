@@ -1,5 +1,9 @@
 ---
 root: true
+# root であっても Cursor では他と同列の .mdc として出るため、
+# alwaysApply を明示しないと Manual 扱いになり自動適用されない
+cursor:
+  alwaysApply: true
 ---
 
 # expo-oxc-config

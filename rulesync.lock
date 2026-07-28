@@ -3,15 +3,15 @@
   "sources": {
     "tzwzx/expo-ai-standards": {
       "requestedRef": "main",
-      "resolvedRef": "a3c14c93b487ad28e3bfbe6de8176122efd098b5",
-      "resolvedAt": "2026-07-28T18:26:38.167Z",
+      "resolvedRef": "ecb6ff3eb0a64be3d89ebf862bbe67f0d4113c9d",
+      "resolvedAt": "2026-07-28T18:49:46.594Z",
       "skills": {},
       "rules": {
         "en-critical-rules": {
-          "integrity": "sha256-4e930cc6c109fc6dc6ecc5e08e162356b9e927400eb43b518b73e5536437096e"
+          "integrity": "sha256-cc033745edffbc73268b96b98af9fc225ecbd02cdc4cc7c622565b151e6d152f"
         },
         "ja-commit-message": {
-          "integrity": "sha256-94e83f46303964361552a2881207b98d3db2b5745df6c1bd601537ebbe4ec448"
+          "integrity": "sha256-916f5266aef8466d22a0fe0f188edbec6c6ba5dc3cfba789ba9355a42afbbd93"
         }
       },
       "ruleSelection": [
