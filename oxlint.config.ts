@@ -16,8 +16,10 @@ export default defineConfig({
     {
       // verify.ts は「アプリと同じように PATH（node_modules/.bin）から
       // ツールを起動できること」自体を検証している。絶対パスに変えると
-      // その検証が弱くなるため、指摘のほうを無効化する
-      files: ["scripts/**/*.ts"],
+      // その検証が弱くなるため、指摘のほうを無効化する。
+      // この理由が立つのは verify.ts だけなので scripts/** へは広げない
+      // （PATH 経由でコマンドを叩く別スクリプトを足したときに検出を効かせる）
+      files: ["scripts/verify.ts"],
       rules: { "sonarjs/no-os-command-from-path": "off" },
     },
   ],
