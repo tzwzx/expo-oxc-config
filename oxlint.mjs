@@ -63,6 +63,16 @@ export const rules = {
   // setTimeout や旧来のコールバック API を await するには new Promise で
   // 包むしかない。RN / Expo の API にはコールバック形式が残っている
   "promise/avoid-new": "off",
+  // RN / Expo では `require` が必要な場面が2つある。どちらも import では書けない:
+  //   1. 画像アセット（`require("./x.png")`）— Expo は *.png の型を宣言しておらず、
+  //      import にすると型解決できない（実測確認）。公式ドキュメントも require を使う
+  //   2. ネイティブモジュールの遅延読み込み — 未リンク環境で落ちないよう
+  //      関数内の try/catch で読む必要があり、巻き上げられる import では代替できない
+  "node/global-require": "off",
+  "unicorn/prefer-module": "off",
+  // 逐次実行が必要な非同期処理（マイグレーションの段階適用、外部サイトへの
+  // 連続アクセスの間隔制御など）。Promise.all 化は順序と復帰位置を壊す
+  "eslint/no-await-in-loop": "off",
 };
 
 /** テストコードとみなすパス（jest の慣習に合わせる） */
@@ -110,8 +120,7 @@ export const overrides = [
     // 網羅性・素直さを優先する箇所のルールを緩める
     files: TEST_FILES,
     rules: {
-      // 逐次実行が読みやすいセットアップ、モック用の空実装、簡易な正規表現など
-      "eslint/no-await-in-loop": "off",
+      // モック用の空実装、簡易な正規表現など
       "eslint/no-empty-function": "off",
       "eslint/no-inline-comments": "off",
       "eslint/no-plusplus": "off",
