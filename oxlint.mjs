@@ -46,10 +46,6 @@ export const rules = {
   // コンポーネントと誤検出し、意図的な exhaustive-deps 抑制まで error にする。
   // React Native の慣用パターンと相性が悪いためフリート全体で無効化する
   "react/react-compiler": "off",
-  // このフリートは消費者向けモバイルアプリで暗号用途の乱数を持たない。
-  // Math.random は ID 生成・演出の抽選・シャッフルにのみ使う
-  // （暗号強度が要る箇所は expo-crypto を使う方針）
-  "sonarjs/pseudo-random": "off",
   // マウント時に一度だけ計算して以降更新しない値は `const [x] = useState(() => ...)`
   // と書くのが正しいが、このルールは [thing, setThing] の対を必須とする。
   // setter を受け取ると今度は未使用変数（sonarjs/no-unused-vars・no-dead-store）に
