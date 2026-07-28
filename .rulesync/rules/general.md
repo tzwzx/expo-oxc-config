@@ -10,7 +10,7 @@ cursor:
 
 Expo アプリ群が使う **oxlint / oxfmt のツールチェーンと共有ルール**の配布元。アプリではないので Expo も React も入っていない。
 
-> 生成元は `.rulesync/` 配下。ルールを変えるときは生成物（`AGENTS.md` / `CLAUDE.md` / `.claude/skills/`）ではなく生成元を編集し、`bun rulesync` で再生成すること。
+> 生成元は `.rulesync/` 配下。ルールを変えるときは生成物（`CLAUDE.md` / `.claude/rules/` / `.claude/skills/`）ではなく生成元を編集し、`bun rulesync` で再生成すること。
 
 ## このリポジトリの立ち位置（変更前に必ず理解すること）
 
