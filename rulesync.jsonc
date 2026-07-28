@@ -8,7 +8,7 @@
     {
       "source": "https://github.com/tzwzx/expo-ai-standards.git",
       "transport": "git",
-      "rules": ["ja-commit-message"],
+      "rules": ["en-critical-rules", "ja-commit-message"],
     },
   ],
   "delete": true,

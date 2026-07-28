@@ -4,18 +4,23 @@
     "tzwzx/expo-ai-standards": {
       "requestedRef": "main",
       "resolvedRef": "f472fdbeb7bd0158417050b9572f9da874f50ae6",
-      "resolvedAt": "2026-07-28T18:12:29.471Z",
+      "resolvedAt": "2026-07-28T18:14:59.112Z",
       "skills": {},
       "rules": {
+        "en-critical-rules": {
+          "integrity": "sha256-4e930cc6c109fc6dc6ecc5e08e162356b9e927400eb43b518b73e5536437096e"
+        },
         "ja-commit-message": {
           "integrity": "sha256-64a0609618f1ffaaf86e5a56ce28bb99676facb32136c2bf36d40fd89ed30bfc"
         }
       },
       "ruleSelection": [
+        "en-critical-rules",
         "ja-commit-message"
       ],
       "rulesPath": "rules",
       "resolvedRuleNames": [
+        "en-critical-rules",
         "ja-commit-message"
       ]
     }
