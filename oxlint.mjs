@@ -50,6 +50,19 @@ export const rules = {
   // Math.random は ID 生成・演出の抽選・シャッフルにのみ使う
   // （暗号強度が要る箇所は expo-crypto を使う方針）
   "sonarjs/pseudo-random": "off",
+  // マウント時に一度だけ計算して以降更新しない値は `const [x] = useState(() => ...)`
+  // と書くのが正しいが、このルールは [thing, setThing] の対を必須とする。
+  // setter を受け取ると今度は未使用変数（sonarjs/no-unused-vars・no-dead-store）に
+  // なるため両立しない（kata / yugaku で実測確認）。4アプリで同じ形が現れており、
+  // 命名規約より凍結値の正しい表現を優先する
+  "react/hook-use-state": "off",
+  // TypeScript では `T | undefined` を要求する引数へ明示的に undefined を渡す
+  // 必要がある（省略と「明示的に未設定」は別物）。このルールはそれを
+  // 「無駄な undefined」と誤検出する
+  "unicorn/no-useless-undefined": "off",
+  // setTimeout や旧来のコールバック API を await するには new Promise で
+  // 包むしかない。RN / Expo の API にはコールバック形式が残っている
+  "promise/avoid-new": "off",
 };
 
 /** テストコードとみなすパス（jest の慣習に合わせる） */
