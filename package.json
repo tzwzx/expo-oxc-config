@@ -1,7 +1,7 @@
 {
   "name": "@tzwzx/expo-oxc-config",
   "version": "0.2.0",
-  "description": "Shared oxlint/oxfmt toolchain + config for tazawa's Expo apps (ultracite wrapper with ignorePatterns fix and common rules)",
+  "description": "Shared oxlint/oxfmt toolchain + config for the Expo app fleet (ultracite wrapper with ignorePatterns fix and common rules)",
   "license": "MIT",
   "repository": "github:tzwzx/expo-oxc-config",
   "type": "module",

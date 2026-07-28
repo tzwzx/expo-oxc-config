@@ -1,6 +1,6 @@
 # @tzwzx/expo-oxc-config
 
-tazawa の Expo アプリ群で共有する **oxlint / oxfmt のツールチェーン一式と設定**。
+Expo アプリ群で共有する **oxlint / oxfmt のツールチェーン一式と設定**。
 
 このパッケージ1つを devDependencies に入れれば、`oxlint` / `oxfmt` コマンドと
 共有ルールがまとめて入る。アプリ側は**コマンドを叩くだけ**でよい。
