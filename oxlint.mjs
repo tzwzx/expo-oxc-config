@@ -20,49 +20,6 @@ export const rules = {
   // Expo Router の特殊ファイル名（_layout, [id], (group), +not-found 等）と
   // kebab-case 強制ルールが衝突するため無効化
   "github/filenames-match-regex": "off",
-  // Hermes（Expo SDK 57 / RN 0.86）が toSorted() / toReversed() 未対応のため、
-  // 不変メソッドへの書き換えを促す指摘・自動変換を無効化する
-  "react-doctor/js-tosorted-immutable": "off",
-  // Expo Router アプリのため、Next.js 前提のクライアントサイドリダイレクト検査は対象外
-  "react-doctor/nextjs-no-client-side-redirect": "off",
-  // react-navigation の headerLeft/headerRight は「要素を返す関数」を受け取る API のため、
-  // props 経由のコンポーネント生成を許可する
-  "react/no-unstable-nested-components": ["error", { allowAsProps: true }],
-  // expo-status-bar の StatusBar は style prop に文字列 enum（"auto" | "light" | "dark"）を
-  // 取るため、オブジェクト限定チェックから除外する
-  "react/style-prop-object": ["error", { allow: ["StatusBar"] }],
-  // Expo/RN 慣習の名前空間 import（例: `import * as Haptics`）と衝突するため無効化
-  "sonarjs/no-wildcard-import": "off",
-  // React コンポーネントの function 宣言（PascalCase）を許容する
-  // （既定の '^[_a-z][a-zA-Z0-9]*$' はコンポーネントを誤検知する）
-  "sonarjs/function-name": ["error", { format: "^_?[a-zA-Z][a-zA-Z0-9]*$" }],
-  "sort-imports": ["error", { ignoreDeclarationSort: true }],
-  "unicorn/no-array-reverse": "off",
-  "unicorn/no-array-sort": "off",
-  // React Compiler が Context value の安定参照を自動メモ化するため、手動メモ化を
-  // 促すこのルールは react-compiler-no-manual-memoization と矛盾する
-  "react/jsx-no-constructed-context-values": "off",
-  // oxlint の react-compiler は reanimated の共有値参照や Gesture.Pan() を
-  // コンポーネントと誤検出し、意図的な exhaustive-deps 抑制まで error にする。
-  // React Native の慣用パターンと相性が悪いためフリート全体で無効化する
-  "react/react-compiler": "off",
-  // マウント時に一度だけ計算して以降更新しない値は `const [x] = useState(() => ...)`
-  // と書くのが正しいが、このルールは [thing, setThing] の対を必須とする。
-  // setter を受け取ると今度は未使用変数（sonarjs/no-unused-vars・no-dead-store）に
-  // なるため両立しない（複数アプリで実測確認）。同じ形が広く現れるため、
-  // 命名規約より凍結値の正しい表現を優先する
-  "react/hook-use-state": "off",
-  // TypeScript では `T | undefined` を要求する引数へ明示的に undefined を渡す
-  // 必要がある（省略と「明示的に未設定」は別物）。このルールはそれを
-  // 「無駄な undefined」と誤検出する
-  "unicorn/no-useless-undefined": "off",
-  // setTimeout や旧来のコールバック API を await するには new Promise で
-  // 包むしかない。RN / Expo の API にはコールバック形式が残っている
-  "promise/avoid-new": "off",
-  // 「null を使え」という助言は TypeScript では成り立たない。optional な
-  // プロパティ・引数の型は `T | undefined` であり、null へ置換すると型が合わない。
-  // 永続化する JSON でも undefined は JSON.stringify で消えるが null は残る
-  "sonarjs/no-undefined-assignment": "off",
   // React Native の TextInput ではキーボードを閉じる標準手段が .blur()。
   // 「直前の要素へフォーカスを戻せ」という指摘は DOM のフォーカス管理を
   // 前提としており、RN には当てはまらない（github プラグインは Web 向け）
@@ -76,6 +33,51 @@ export const rules = {
   //      各パッケージ公式モックの読み込みに require が必須（jest.setup.ts）
   //   4. app.config.ts — Node のコンテキストで評価されるため CommonJS 由来の API を使う
   "node/global-require": "off",
+  // setTimeout や旧来のコールバック API を await するには new Promise で
+  // 包むしかない。RN / Expo の API にはコールバック形式が残っている
+  "promise/avoid-new": "off",
+  // Hermes（Expo SDK 57 / RN 0.86）が toSorted() / toReversed() 未対応のため、
+  // 不変メソッドへの書き換えを促す指摘・自動変換を無効化する
+  "react-doctor/js-tosorted-immutable": "off",
+  // Expo Router アプリのため、Next.js 前提のクライアントサイドリダイレクト検査は対象外
+  "react-doctor/nextjs-no-client-side-redirect": "off",
+  // マウント時に一度だけ計算して以降更新しない値は `const [x] = useState(() => ...)`
+  // と書くのが正しいが、このルールは [thing, setThing] の対を必須とする。
+  // setter を受け取ると今度は未使用変数（sonarjs/no-unused-vars・no-dead-store）に
+  // なるため両立しない（複数アプリで実測確認）。同じ形が広く現れるため、
+  // 命名規約より凍結値の正しい表現を優先する
+  "react/hook-use-state": "off",
+  // React Compiler が Context value の安定参照を自動メモ化するため、手動メモ化を
+  // 促すこのルールは react-compiler-no-manual-memoization と矛盾する
+  "react/jsx-no-constructed-context-values": "off",
+  // react-navigation の headerLeft/headerRight は「要素を返す関数」を受け取る API のため、
+  // props 経由のコンポーネント生成を許可する
+  "react/no-unstable-nested-components": ["error", { allowAsProps: true }],
+  // oxlint の react-compiler は reanimated の共有値参照や Gesture.Pan() を
+  // コンポーネントと誤検出し、意図的な exhaustive-deps 抑制まで error にする。
+  // React Native の慣用パターンと相性が悪いためフリート全体で無効化する
+  "react/react-compiler": "off",
+  // expo-status-bar の StatusBar は style prop に文字列 enum（"auto" | "light" | "dark"）を
+  // 取るため、オブジェクト限定チェックから除外する
+  "react/style-prop-object": ["error", { allow: ["StatusBar"] }],
+  // React コンポーネントの function 宣言（PascalCase）を許容する
+  // （既定の '^[_a-z][a-zA-Z0-9]*$' はコンポーネントを誤検知する）
+  "sonarjs/function-name": ["error", { format: "^_?[a-zA-Z][a-zA-Z0-9]*$" }],
+  // 「null を使え」という助言は TypeScript では成り立たない。optional な
+  // プロパティ・引数の型は `T | undefined` であり、null へ置換すると型が合わない。
+  // 永続化する JSON でも undefined は JSON.stringify で消えるが null は残る
+  "sonarjs/no-undefined-assignment": "off",
+  // Expo/RN 慣習の名前空間 import（例: `import * as Haptics`）と衝突するため無効化
+  "sonarjs/no-wildcard-import": "off",
+  "sort-imports": ["error", { ignoreDeclarationSort: true }],
+  // Hermes が toSorted() / toReversed() 未対応のため（react-doctor/js-tosorted-immutable のコメントを参照）
+  "unicorn/no-array-reverse": "off",
+  "unicorn/no-array-sort": "off",
+  // TypeScript では `T | undefined` を要求する引数へ明示的に undefined を渡す
+  // 必要がある（省略と「明示的に未設定」は別物）。このルールはそれを
+  // 「無駄な undefined」と誤検出する
+  "unicorn/no-useless-undefined": "off",
+  // require が必要な理由は node/global-require のコメントを参照
   "unicorn/prefer-module": "off",
 };
 
@@ -125,7 +127,6 @@ export const overrides = [
       "eslint/prefer-named-capture-group": "off",
       "eslint/require-await": "off",
       "eslint/require-unicode-regexp": "off",
-      "unicorn/no-await-expression-member": "off",
       // ループ内の early return/break はテスト基盤の読みやすさに寄与する
       "sonarjs/too-many-break-or-continue-in-loop": "off",
       // `jest.mock<typeof import("...")>(...)` はモックファクトリに型を付ける
@@ -134,6 +135,8 @@ export const overrides = [
       // テストコードでは無効にする（モジュールごとに import type * as を
       // 足す形にすると、モック対象1つにつき1行の重複が増えるだけになる）
       "typescript/consistent-type-imports": "off",
+      // テストでは `(await fn()).prop` の直書きが読みやすい
+      "unicorn/no-await-expression-member": "off",
     },
   },
   {
@@ -150,6 +153,15 @@ export const overrides = [
       // アサーションヘルパーも「検証している」とみなす
       "jest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*"] }],
       "jest/no-alias-methods": "error",
+      // テストの無効化は削除ではなくコメントアウトする、という規約があるため
+      "jest/no-commented-out-tests": "off",
+      // TypeScript の判別可能ユニオンを絞り込む `if` を「条件付きアサーション」と
+      // 誤検出する。`expect(r.found).toBe(true); if (r.found) { expect(r.data)... }` の
+      // ように、直前で表明した内容を型として絞るための if が対象になってしまう
+      // （フリート7アプリの全29件を確認したところ、すべてこの絞り込みだった）。
+      // 本来の対象である try/catch でのアサーション握り潰しも一緒に見逃す点は
+      // 承知のうえで無効化する
+      "jest/no-conditional-expect": "off",
       "jest/no-deprecated-functions": "error",
       "jest/no-done-callback": "error",
       "jest/no-duplicate-hooks": "error",
@@ -163,6 +175,11 @@ export const overrides = [
       "jest/no-standalone-expect": "error",
       "jest/no-test-prefixes": "error",
       "jest/no-test-return-statement": "error",
+      // 自動修正が `jest.mock<typeof import("m")>(...)` を生成するが、これは
+      // ファクトリがモジュール全体の型を満たすことを要求する。RN / Expo の
+      // テストでは必要な export だけを返す部分モックが常道で、型エラーになる
+      // （実測: 7アプリの37箇所すべてが部分モックで tsc が通らなくなった）
+      "jest/no-untyped-mock-factory": "off",
       "jest/prefer-hooks-in-order": "error",
       "jest/prefer-hooks-on-top": "error",
       "jest/prefer-spy-on": "error",
@@ -173,20 +190,6 @@ export const overrides = [
       "jest/valid-expect": "error",
       "jest/valid-expect-in-promise": "error",
       "jest/valid-title": "error",
-      // テストの無効化は削除ではなくコメントアウトする、という規約があるため
-      "jest/no-commented-out-tests": "off",
-      // 自動修正が `jest.mock<typeof import("m")>(...)` を生成するが、これは
-      // ファクトリがモジュール全体の型を満たすことを要求する。RN / Expo の
-      // テストでは必要な export だけを返す部分モックが常道で、型エラーになる
-      // （実測: 7アプリの37箇所すべてが部分モックで tsc が通らなくなった）
-      "jest/no-untyped-mock-factory": "off",
-      // TypeScript の判別可能ユニオンを絞り込む `if` を「条件付きアサーション」と
-      // 誤検出する。`expect(r.found).toBe(true); if (r.found) { expect(r.data)... }` の
-      // ように、直前で表明した内容を型として絞るための if が対象になってしまう
-      // （フリート7アプリの全29件を確認したところ、すべてこの絞り込みだった）。
-      // 本来の対象である try/catch でのアサーション握り潰しも一緒に見逃す点は
-      // 承知のうえで無効化する
-      "jest/no-conditional-expect": "off",
     },
   },
   {
@@ -212,9 +215,9 @@ export const overrides = [
     // use* 命名のユーティリティを持つため rules-of-hooks が誤検出する
     files: ["e2e/**/*.{ts,tsx}"],
     rules: {
+      "eslint-plugin-react-hooks/rules-of-hooks": "off",
       // 画面操作は順に進めるため逐次 await が自然
       "eslint/no-await-in-loop": "off",
-      "eslint-plugin-react-hooks/rules-of-hooks": "off",
       "sonarjs/too-many-break-or-continue-in-loop": "off",
     },
   },
@@ -223,22 +226,18 @@ export const overrides = [
 /**
  * 共通設定にアプリ固有分をマージした config オブジェクトを返す。
  * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
- * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app
+ * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app アプリ固有の追加設定
  */
-export function buildConfig(app = {}) {
-  return {
-    extends: presets,
-    ignorePatterns: [...ignorePatterns, ...(app.ignorePatterns ?? [])],
-    overrides: [...overrides, ...(app.overrides ?? [])],
-    rules: { ...rules, ...(app.rules ?? {}) },
-  };
-}
+export const buildConfig = (app = {}) => ({
+  extends: presets,
+  ignorePatterns: [...ignorePatterns, ...(app.ignorePatterns ?? [])],
+  overrides: [...overrides, ...(app.overrides ?? [])],
+  rules: { ...rules, ...app.rules },
+});
 
 /**
  * 共通設定にアプリ固有分をマージして oxlint の設定として返す。
  * 各アプリの oxlint.config.ts はこれを default export するだけでよい。
- * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app
+ * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app アプリ固有の追加設定
  */
-export function defineConfig(app = {}) {
-  return defineOxlintConfig(buildConfig(app));
-}
+export const defineConfig = (app = {}) => defineOxlintConfig(buildConfig(app));

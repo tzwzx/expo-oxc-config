@@ -9,23 +9,19 @@ import ultracite from "ultracite/oxfmt";
 /**
  * ultracite プリセットにアプリ固有の ignorePatterns をマージした config を返す。
  * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
- * @param {{ ignorePatterns?: string[] }} app
+ * @param {{ ignorePatterns?: string[] }} app アプリ固有の追加設定
  */
-export function buildConfig(app = {}) {
-  return {
-    ...ultracite,
-    ignorePatterns: [
-      ...(ultracite.ignorePatterns ?? []),
-      ...(app.ignorePatterns ?? []),
-    ],
-  };
-}
+export const buildConfig = (app = {}) => ({
+  ...ultracite,
+  ignorePatterns: [
+    ...(ultracite.ignorePatterns ?? []),
+    ...(app.ignorePatterns ?? []),
+  ],
+});
 
 /**
  * 共通設定にアプリ固有分をマージして oxfmt の設定として返す。
  * 各アプリの oxfmt.config.ts はこれを default export するだけでよい。
- * @param {{ ignorePatterns?: string[] }} app
+ * @param {{ ignorePatterns?: string[] }} app アプリ固有の追加設定
  */
-export function defineConfig(app = {}) {
-  return defineOxfmtConfig(buildConfig(app));
-}
+export const defineConfig = (app = {}) => defineOxfmtConfig(buildConfig(app));
