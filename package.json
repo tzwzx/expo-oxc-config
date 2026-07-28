@@ -25,6 +25,8 @@
   },
   "scripts": {
     "verify": "bun scripts/verify.ts",
-    "rulesync": "bunx rulesync install && bunx rulesync generate && .rulesync/scripts/post-generate.sh"
+    "rulesync": "bunx rulesync install && bunx rulesync generate && .rulesync/scripts/post-generate.sh",
+    "lint": "oxfmt --check --disable-nested-config && oxlint --disable-nested-config --report-unused-disable-directives-severity=error",
+    "fix": "oxfmt --disable-nested-config && oxlint --disable-nested-config --fix"
   }
 }
