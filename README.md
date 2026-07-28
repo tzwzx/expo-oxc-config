@@ -11,7 +11,7 @@ Expo アプリ群で共有する **oxlint / oxfmt のツールチェーン一式
 >
 > どちらも rulesync の**編集元**。`AGENTS.md` / `.claude/skills/` は `bun rulesync` の生成物で gitignore 対象なので、クローン直後には存在しない（生成物を直接編集しないこと）。
 >
-> ここの変更は **Expo アプリ7本すべてに一斉に効く**。`bun verify` を通さずに push しないこと。
+> ここの変更は **Expo アプリ7本すべてに一斉に効く**。`bun verify` と `bun lint` を通さずに push しないこと。
 
 ## 何を持っているか
 
@@ -77,8 +77,11 @@ oxlint / oxfmt / ultracite / プラグインの更新は**このリポジトリ�
 ```bash
 bun update          # または package.json のバージョンを編集
 bun verify          # ← ツールチェーンが壊れていないか検査
+bun lint            # ← このリポジトリ自身の整形・lint（落ちたら bun fix）
 git commit && git push
 ```
+
+`bun verify` と `bun lint` は見ているものが違うので、**両方**を通す。verify はツールチェーンが壊れていないかしか見ないため、oxfmt の更新で整形出力が変わっても verify は緑のまま `bun lint` だけが落ちる。
 
 各アプリは `bun update @tzwzx/expo-oxc-config` で追従し、そのリポジトリの `bun codesweep:check` で最終確認する。
 
