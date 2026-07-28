@@ -67,11 +67,14 @@ export const rules = {
   // 「直前の要素へフォーカスを戻せ」という指摘は DOM のフォーカス管理を
   // 前提としており、RN には当てはまらない（github プラグインは Web 向け）
   "github/no-blur": "off",
-  // RN / Expo では `require` が必要な場面が2つある。どちらも import では書けない:
+  // RN / Expo では `require` が必要な場面が4つある。いずれも import では書けない:
   //   1. 画像アセット（`require("./x.png")`）— Expo は *.png の型を宣言しておらず、
   //      import にすると型解決できない（実測確認）。公式ドキュメントも require を使う
   //   2. ネイティブモジュールの遅延読み込み — 未リンク環境で落ちないよう
   //      関数内の try/catch で読む必要があり、巻き上げられる import では代替できない
+  //   3. jest.mock のファクトリ — ファクトリごと巻き上げられるため ESM import を使えず、
+  //      各パッケージ公式モックの読み込みに require が必須（jest.setup.ts）
+  //   4. app.config.ts — Node のコンテキストで評価されるため CommonJS 由来の API を使う
   "node/global-require": "off",
   "unicorn/prefer-module": "off",
 };
@@ -100,20 +103,13 @@ export const overrides = [
       "react-doctor/no-react19-deprecated-apis": "off",
       "react/display-name": "off",
       "sonarjs/function-name": "off",
-      // jest.mock のファクトリは巻き上げられるため ESM import を使えず、
-      // 各パッケージ公式モックの読み込みに require が必須
-      "node/global-require": "off",
-      "unicorn/prefer-module": "off",
     },
   },
   {
-    // Expo の設定ファイル。Node のコンテキストで評価されるため CommonJS 由来の
-    // API（__dirname など）を使い、Expo の慣例として無名の default export で書く
+    // Expo の設定ファイル。Expo の慣例として無名の default export で書く
     files: ["app.config.ts"],
     rules: {
-      "node/global-require": "off",
       "unicorn/no-anonymous-default-export": "off",
-      "unicorn/prefer-module": "off",
     },
   },
   {

@@ -4,10 +4,12 @@ description: >-
   expo-oxc-config が所有する lint ツールチェーン（oxlint / oxfmt / ultracite と
   JS プラグイン3種）を最新版へ更新し、新バージョンのベストプラクティスに設定を追従させ、
   使えそうな新機能を提案し、設定しているルール（無効化を含む）が Expo プロジェクトとして
-  適切かを棚卸しし、壊れていないかのスモークテスト（bun verify）まで回すスキル。
+  適切かを棚卸しし、デフォルト値や継承元と同値になった冗長な記述を削除して設定をスリムにし、
+  壊れていないかのスモークテスト（bun verify）まで回すスキル。
   「パッケージを更新して」「oxlint を最新に」「ツールチェーンを上げて」「lint まわりを最新化して」
   「ultracite を更新して」「依存を最新にして」「無効化しているルールを見直して」
-  「共通パッケージに寄せられないか」「/update-toolchain」などのリクエストで使用する。
+  「共通パッケージに寄せられないか」「設定をスリムにして」「冗長な設定を削除して」
+  「/update-toolchain」などのリクエストで使用する。
   このリポジトリでのパッケージ更新・バージョン上げに少しでも関連する依頼なら、
   明示的にスキル名を言われなくても積極的にこのスキルを使うこと。
 ---
@@ -188,6 +190,94 @@ bun install
 `oxlint.mjs` / `oxfmt.mjs` を編集した場合、**なぜその設定なのかをコメントに残す**。
 このリポジトリのコメントは「後から読む人が同じ調査を繰り返さないため」に書かれているので、
 移行の理由や実測した事実（バージョンと挙動）を書き添えること。
+
+---
+
+## Phase 3.5: 設定ファイルのスリム化
+
+更新で**プリセット側の既定値が変わり、これまで必要だった上書きが不要になっている**ことがある。
+不要な記述が残ると「なぜこの設定があるのか」が読み取れなくなるので、更新のたびに棚卸しする。
+
+### 削除対象
+
+1. **デフォルト値と同じ設定** — 書かなくても同じ動作をするもの
+2. **継承元と同じ値での上書き** — ultracite プリセットが既に同じ値にしているルール、
+   および `overrides` でトップレベルの `rules` と同じ値を再指定しているもの
+3. **効いていない無効化・ignore 指定** — 対象のルールがもう存在しない、
+   ignore パターンにマッチするファイルが無い、など
+
+### 削除しないもの
+
+- **`ignorePatterns` のトップレベル再宣言** — `extends` は ignorePatterns をマージしない（実測確認済み）。
+  一見 `core.ignorePatterns` の重複に見えるが、**消すと静かに壊れる**。`bun verify` が検知する
+- **`fixtures/` 配下** — 意図的に指摘が出るよう書かれた検査用の資材
+- **確認が取れないもの** — デフォルト値やマージ戦略が不明なものは推測で消さない
+
+### 確認方法（推測で消さない）
+
+**デフォルト値** はスキーマを一次情報にする。
+
+```bash
+cat node_modules/oxlint/configuration_schema.json | grep -A3 '"default"' | head -40
+cat node_modules/oxfmt/configuration_schema.json
+```
+
+**プリセット・上位設定との重複**は機械的に洗い出す。
+
+```bash
+bun -e '
+import core from "ultracite/oxlint/core";
+import react from "ultracite/oxlint/react";
+import jsPlugins from "ultracite/oxlint/js-plugins";
+import { rules, overrides } from "./oxlint.mjs";
+const preset = {};
+for (const p of [core, react, jsPlugins]) {
+  Object.assign(preset, p.rules ?? {});
+  for (const o of p.overrides ?? []) Object.assign(preset, o.rules ?? {});
+}
+console.log("--- rules のうちプリセットと同値（削除候補） ---");
+for (const [id, v] of Object.entries(rules)) {
+  if (JSON.stringify(preset[id]) === JSON.stringify(v)) console.log(" ", id, JSON.stringify(v));
+}
+console.log("--- overrides のうちトップレベル rules と同値（削除候補） ---");
+for (const o of overrides) {
+  for (const [id, v] of Object.entries(o.rules ?? {})) {
+    if (JSON.stringify(rules[id]) === JSON.stringify(v)) {
+      console.log(" ", JSON.stringify(o.files), id, JSON.stringify(v));
+    }
+  }
+}
+'
+```
+
+oxfmt 側は `{ ...ultracite }` のスプレッド合成なので、**全キーが ultracite と同値なのは正常**
+（それを機械的に列挙しても意味がない）。見るべきは **`oxfmt.mjs` に literal で書いたキー**だけ。
+
+```bash
+grep -n '^\s*[a-zA-Z]\+:' oxfmt.mjs   # スプレッド以外に書いているキーを目視で確認
+```
+
+現在 literal で書いているのは `ignorePatterns` のみ（ultracite の分とアプリ固有分をマージするため必要）。
+将来ここへ整形オプションを足した場合は、`node_modules/oxfmt/configuration_schema.json` の
+`default` および `ultracite/oxfmt` の値と比べ、同値なら削除する。
+
+### 削除するときの作法
+
+- **理由コメントに書かれた知識を捨てない。** 重複する設定を消すと、その設定に付いていた
+  理由コメントも一緒に消えることになる。**上位側のコメントに同じ理由が書かれていない場合は、
+  上位側へ理由を追記してから消す**（このリポジトリのコメントは「後から読む人が同じ調査を
+  繰り返さないため」に書かれている）
+- **削除後は必ず `bun verify` を通す。** 「消しても同じ」と判断したものが実は効いていた場合、
+  off にしたルールの検査項目が落ちる
+- **アプリ側でも実測する。** Phase 5-2 の `file:` 参照で `bun codesweep:check` を回し、
+  削除前後で**新規指摘が増えていないこと**を確認する（増えていたら削除は誤りなので戻す）
+
+### 各アプリの設定も対象
+
+共有側に無効化を追加した結果、**各アプリの `oxlint.config.ts` に不要な `off` が残る**ことがある。
+インライン抑止は `--report-unused-disable-directives-severity=error` が自動検出するが、
+**設定ファイルの `off` は自動検出されない**ので、Phase 6 の展開時に各アプリで手動確認する
+（該当行を一時的に外して `bunx oxlint` を回し、指摘が出なければ削除できる）。
 
 ---
 
