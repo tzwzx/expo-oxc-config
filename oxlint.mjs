@@ -82,10 +82,7 @@ export const rules = {
 };
 
 /** テストコードとみなすパス（jest の慣習に合わせる） */
-const TEST_FILES = [
-  "**/*.{test,spec}.{ts,tsx}",
-  "**/__tests__/**/*.{ts,tsx}",
-];
+const TEST_FILES = ["**/*.{test,spec}.{ts,tsx}", "**/__tests__/**/*.{ts,tsx}"];
 
 export const overrides = [
   {
@@ -148,10 +145,16 @@ export const overrides = [
     plugins: ["jest"],
     rules: {
       // フリートは test() で統一している（it() ではない）
-      "jest/consistent-test-it": ["error", { fn: "test", withinDescribe: "test" }],
+      "jest/consistent-test-it": [
+        "error",
+        { fn: "test", withinDescribe: "test" },
+      ],
       // `expectPressedStyle(...)` のように expect 接頭辞で自作した
       // アサーションヘルパーも「検証している」とみなす
-      "jest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*"] }],
+      "jest/expect-expect": [
+        "error",
+        { assertFunctionNames: ["expect", "expect*"] },
+      ],
       "jest/no-alias-methods": "error",
       // テストの無効化は削除ではなくコメントアウトする、という規約があるため
       "jest/no-commented-out-tests": "off",

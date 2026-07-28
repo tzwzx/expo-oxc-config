@@ -4,8 +4,7 @@ root: true
 
 # expo-oxc-config
 
-Expo アプリ群が使う **oxlint / oxfmt のツールチェーンと共有ルール**の配布元。
-アプリではないので Expo も React も入っていない。
+Expo アプリ群が使う **oxlint / oxfmt のツールチェーンと共有ルール**の配布元。アプリではないので Expo も React も入っていない。
 
 > 生成元は `.rulesync/` 配下。ルールを変えるときは生成物（`AGENTS.md` / `CLAUDE.md` / `.claude/skills/`）ではなく生成元を編集し、`bun rulesync` で再生成すること。
 
@@ -18,7 +17,7 @@ Expo アプリ群が使う **oxlint / oxfmt のツールチェーンと共有ル
 ## 構成
 
 | ファイル | 役割 |
-|---|---|
+| --- | --- |
 | `oxlint.mjs` / `oxlint.d.mts` | 共有 oxlint 設定。`defineConfig()` がアプリの入口 |
 | `oxfmt.mjs` / `oxfmt.d.mts` | 共有 oxfmt 設定。oxfmt は `extends` を解釈しないためスプレッドで合成する |
 | `fixtures/` | `bun verify` の検査用資材 |
@@ -38,13 +37,8 @@ bun verify    # ツールチェーンが壊れていないかのスモークテ�
 bun rulesync  # 共有ルールの取得と AI 設定の生成（.rulesync/ を編集したら実行する）
 ```
 
-**`postinstall` は置かない。** このリポジトリは他アプリの依存として install されるため、
-lifecycle スクリプトを持つとアプリ側の `bun install` で「Blocked 1 postinstall」の警告が出る
-（bun は依存の postinstall を既定でブロックするので実害は無いが、信頼設定を入れると
-node_modules 内で rulesync が走ってしまう）。クローン直後は `bun rulesync` を手で実行する。
+**`postinstall` は置かない。** このリポジトリは他アプリの依存として install されるため、lifecycle スクリプトを持つとアプリ側の `bun install` で「Blocked 1 postinstall」の警告が出る（bun は依存の postinstall を既定でブロックするので実害は無いが、信頼設定を入れると node_modules 内で rulesync が走ってしまう）。クローン直後は `bun rulesync` を手で実行する。
 
-なお **git 依存では `files` フィールドが効かず**、リポジトリ全体がアプリの node_modules へ入る。
-配布物を絞りたい場合はこの前提で考えること（現状は数十 KB なので許容している）。
+なお **git 依存では `files` フィールドが効かず**、リポジトリ全体がアプリの node_modules へ入る。配布物を絞りたい場合はこの前提で考えること（現状は数十 KB なので許容している）。
 
-ルールの追加・改名・挙動変更は許容する（アプリ側で追従すればよい）。
-`bun verify` が捕まえるのは「まともに動かない状態のまま配ってしまう」ことだけ。
+ルールの追加・改名・挙動変更は許容する（アプリ側で追従すればよい）。 `bun verify` が捕まえるのは「まともに動かない状態のまま配ってしまう」ことだけ。
