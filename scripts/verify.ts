@@ -40,7 +40,7 @@ const record = (name: string, ok: boolean, detail: string): void => {
 const runOxlint = (): OxlintJson => {
   const result = spawnSync("oxlint", ["--format=json", "."], {
     cwd: FIXTURES_DIR,
-    encoding: "utf8",
+    encoding: "utf-8",
   });
 
   if (result.error) {
@@ -197,18 +197,25 @@ export const probe = async (path: string): Promise<string> => {
 );
 const fmt = spawnSync("oxfmt", ["--check", ".verify-probe.ts"], {
   cwd: FIXTURES_DIR,
-  encoding: "utf8",
+  encoding: "utf-8",
 });
 rmSync(PROBE_FILE, { force: true });
+
+// eslint 互換の exit: 0 = 差分なし / 1 = 要整形。ここでは 1 が正常
+const describeFmtResult = (): string => {
+  if (fmt.error) {
+    return `実行できなかった: ${fmt.error.message}`;
+  }
+  if (fmt.status === 1) {
+    return "import 順の乱れを検知（sortImports が有効）";
+  }
+  return `exit ${fmt.status} — 乱れた import が素通りした。プリセットが効いていない可能性`;
+};
+
 record(
   "oxfmt に ultracite の整形設定が効いている",
   fmt.error === undefined && fmt.status === 1,
-  // eslint 互換の exit: 0 = 差分なし / 1 = 要整形。ここでは 1 が正常
-  fmt.error
-    ? `実行できなかった: ${fmt.error.message}`
-    : fmt.status === 1
-      ? "import 順の乱れを検知（sortImports が有効）"
-      : `exit ${fmt.status} — 乱れた import が素通りした。プリセットが効いていない可能性`
+  describeFmtResult()
 );
 
 for (const check of checks) {
