@@ -16,7 +16,7 @@ description: >-
 
 # ツールチェーン更新
 
-このリポジトリの更新は **Expo アプリ7本すべてに一斉に効く**。アプリ側の package.json には
+このリポジトリの更新は **消費側の Expo アプリすべてに一斉に効く**。アプリ側の package.json には
 `oxlint` / `oxfmt` / `ultracite` が無く、ここが配るバイナリと設定で全アプリの `bun lint` が動いているため、
 壊した状態で push すると次に追従したアプリから順に lint が動かなくなる。
 
@@ -100,7 +100,7 @@ bun install
 5. **不要になった抑止コメントが残っていないか**
 
    ```bash
-   cd ../expo-boilerplate && bun lint   # 各アプリの lint に検出が組み込んである
+   cd <消費側のアプリ> && bun lint   # 各アプリの lint に検出が組み込んである
    ```
 
    `--report-unused-disable-directives-severity=error` が各アプリの `lint`
@@ -125,8 +125,8 @@ bun install
 
    ```bash
    # 各アプリの固有設定を並べて見比べる
-   for r in expo-boilerplate kata shikaku-collection sync widget-now yaboyo yugaku; do
-     echo "=== $r ==="; cat ../$r/oxlint.config.ts
+   for d in $(bun scripts/list-consumers.ts); do
+     echo "=== $d ==="; cat "$d/oxlint.config.ts"
    done
    ```
 
@@ -288,7 +288,7 @@ grep -n '^\s*[a-zA-Z]\+:' oxfmt.mjs   # スプレッド以外に書いている�
 観点:
 
 - **ultracite の未使用プリセット** — 採用するとテストコードへのルールが増えるため、既存コードへの影響を必ず先に測る。
-  jest プリセットは 2026-07 に検討し、**プリセットのまま入れると7アプリ合計 5,601 件**（大半が
+  jest プリセットは 2026-07 に検討し、**プリセットのまま入れると消費側の全アプリ合計 5,601 件**（大半が
   `consistent-test-it` などの表記の好み）になったため、必要なルールだけを opt-in する形で採用した（204 件）
 - **oxlint の新ルール・新カテゴリ** — フリート標準に入れる価値があるか
 - **oxfmt の新オプション** — 整形結果が変わるものは全アプリに差分が出るので影響を明示する
@@ -321,11 +321,11 @@ bun verify
 
 ### 5-2. 実アプリでの検証（メジャー更新時・新機能採用時は必須）
 
-fixtures だけでは実コード固有の挙動まではわからない。`expo-boilerplate` を検証台にする
-（テンプレートなので全リポの共通パターンを含みつつ、codesweep が数秒で終わる）。
+fixtures だけでは実コード固有の挙動まではわからない。消費側のアプリを1つ検証台にする。
+**最小構成のテンプレートリポジトリ**があればそれが速い（共通パターンを含みつつ codesweep が数秒で終わる）。
 
 ```bash
-cd ../expo-boilerplate
+cd <検証台にするアプリ>
 # package.json の @tzwzx/expo-oxc-config を "file:../expo-oxc-config" へ一時的に差し替える
 bun install
 bun codesweep:check
@@ -336,7 +336,7 @@ git restore package.json bun.lock && bun install
 `file:` 参照にすると**このリポジトリの新しい依存（新 oxlint 含む）がアプリへ実際に入る**ので、
 push 前に本番同等の検証ができる。新規指摘が出た場合はその件数を Phase 4 の提案に反映する。
 
-影響が大きそうなときは、規模の違うアプリ（例: `kata` や `shikaku-collection`）でも同じ手順で測る。
+影響が大きそうなときは、規模の違うアプリでも同じ手順で測る。
 
 ---
 
@@ -362,7 +362,7 @@ push 前に本番同等の検証ができる。新規指摘が出た場合はそ
 
 ## ガードレール
 
-- **`bun verify` が緑になる前に push しない。** 7アプリに一斉に効くため、壊れた状態を配ると被害が広い
+- **`bun verify` が緑になる前に push しない。** 消費側のアプリに一斉に効くため、壊れた状態を配ると被害が広い
 - **共有設定は「Expo プロジェクトとして適切なルール」であることを前提にする。** 無効化を足すときも
   既存の無効化を見直すときも、Phase 3 の基準1／基準2 のどちらを満たすのかを言えること。
   言えないものは共有側に置かず、各アプリのファイル単位へ降ろす

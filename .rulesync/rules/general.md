@@ -4,15 +4,15 @@ root: true
 
 # expo-oxc-config
 
-Expo アプリ7本（expo-boilerplate / kata / shikaku-collection / sync / widget-now / yaboyo / yugaku）が使う
-**oxlint / oxfmt のツールチェーンと共有ルール**の配布元。アプリではないので Expo も React も入っていない。
+Expo アプリ群が使う **oxlint / oxfmt のツールチェーンと共有ルール**の配布元。
+アプリではないので Expo も React も入っていない。
 
 > 生成元は `.rulesync/` 配下。ルールを変えるときは生成物（`AGENTS.md` / `CLAUDE.md` / `.claude/skills/`）ではなく生成元を編集し、`bun rulesync` で再生成すること。
 
 ## このリポジトリの立ち位置（変更前に必ず理解すること）
 
 - **ツール本体（`oxlint` / `oxfmt` / `ultracite`）と JS プラグイン3種を `dependencies` として所有している。** アプリ側の package.json にはこれらが**無い**。bun が推移的依存の bin もルートの `node_modules/.bin` へ張るため、アプリの `bun lint` はここが配るバイナリで動く
-- つまり**ここでのバージョン更新は7アプリすべてに一斉に効く。** 壊した状態で push すると、次に `bun update @tzwzx/expo-oxc-config` したアプリから順に lint が動かなくなる
+- つまり**ここでのバージョン更新は消費側のアプリすべてに一斉に効く。** 壊した状態で push すると、次に `bun update @tzwzx/expo-oxc-config` したアプリから順に lint が動かなくなる
 - 更新は必ず `bun verify` を通してから push する（手順はスキル `update-toolchain` を使う）
 
 ## 構成

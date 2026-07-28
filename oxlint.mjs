@@ -49,7 +49,7 @@ export const rules = {
   // マウント時に一度だけ計算して以降更新しない値は `const [x] = useState(() => ...)`
   // と書くのが正しいが、このルールは [thing, setThing] の対を必須とする。
   // setter を受け取ると今度は未使用変数（sonarjs/no-unused-vars・no-dead-store）に
-  // なるため両立しない（kata / yugaku で実測確認）。4アプリで同じ形が現れており、
+  // なるため両立しない（複数アプリで実測確認）。同じ形が広く現れるため、
   // 命名規約より凍結値の正しい表現を優先する
   "react/hook-use-state": "off",
   // TypeScript では `T | undefined` を要求する引数へ明示的に undefined を渡す
@@ -89,7 +89,7 @@ export const overrides = [
   {
     // React Native では StyleSheet.create() やコンポーネントをファイル末尾に定義する
     // 慣例のため、変数・関数の前方参照を許可し、クラス等の前方参照は検出する。
-    // ルール ID は接頭辞なしの bare 形式（typescript/ 等の誤 ID だと無効果 — sync で実測済み）
+    // ルール ID は接頭辞なしの bare 形式（typescript/ 等の誤 ID だと無効果 — 実測済み）
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "no-use-before-define": ["error", { functions: false, variables: false }],

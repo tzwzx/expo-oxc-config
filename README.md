@@ -80,9 +80,8 @@ fallow が宣言済み依存からツールを検出する都合で到達不能�
 「該当1行の `oxlint-disable-next-line` + 理由」のいずれかにする。
 「あとで直す」類の暫定 off は置かない。
 
-フリート共通で妥当と確認済みの例外（`unstable_settings` の命名、非暗号用途の
-`Math.random`、TS optional 型への `undefined` 代入など）は
-`my-unify-expo-config` スキルの `references/standards.md` を参照。
+共有側に置いてよい無効化と、アプリ側へ委ねるべき無効化の判断基準は
+[`update-toolchain` スキル](.rulesync/skills/update-toolchain/SKILL.md)に書いてある。
 
 ## 更新の手順（重要）
 
