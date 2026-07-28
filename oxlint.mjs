@@ -63,6 +63,14 @@ export const rules = {
   // setTimeout や旧来のコールバック API を await するには new Promise で
   // 包むしかない。RN / Expo の API にはコールバック形式が残っている
   "promise/avoid-new": "off",
+  // 「null を使え」という助言は TypeScript では成り立たない。optional な
+  // プロパティ・引数の型は `T | undefined` であり、null へ置換すると型が合わない。
+  // 永続化する JSON でも undefined は JSON.stringify で消えるが null は残る
+  "sonarjs/no-undefined-assignment": "off",
+  // React Native の TextInput ではキーボードを閉じる標準手段が .blur()。
+  // 「直前の要素へフォーカスを戻せ」という指摘は DOM のフォーカス管理を
+  // 前提としており、RN には当てはまらない（github プラグインは Web 向け）
+  "github/no-blur": "off",
   // RN / Expo では `require` が必要な場面が2つある。どちらも import では書けない:
   //   1. 画像アセット（`require("./x.png")`）— Expo は *.png の型を宣言しておらず、
   //      import にすると型解決できない（実測確認）。公式ドキュメントも require を使う
@@ -70,9 +78,6 @@ export const rules = {
   //      関数内の try/catch で読む必要があり、巻き上げられる import では代替できない
   "node/global-require": "off",
   "unicorn/prefer-module": "off",
-  // 逐次実行が必要な非同期処理（マイグレーションの段階適用、外部サイトへの
-  // 連続アクセスの間隔制御など）。Promise.all 化は順序と復帰位置を壊す
-  "eslint/no-await-in-loop": "off",
 };
 
 /** テストコードとみなすパス（jest の慣習に合わせる） */
@@ -120,7 +125,8 @@ export const overrides = [
     // 網羅性・素直さを優先する箇所のルールを緩める
     files: TEST_FILES,
     rules: {
-      // モック用の空実装、簡易な正規表現など
+      // 手順を追って逐次実行する、モック用の空実装、簡易な正規表現など
+      "eslint/no-await-in-loop": "off",
       "eslint/no-empty-function": "off",
       "eslint/no-inline-comments": "off",
       "eslint/no-plusplus": "off",
@@ -130,9 +136,6 @@ export const overrides = [
       "unicorn/no-await-expression-member": "off",
       // ループ内の early return/break はテスト基盤の読みやすさに寄与する
       "sonarjs/too-many-break-or-continue-in-loop": "off",
-      // 「既定値のまま」と「明示的に未設定へ上書きした」の区別そのものが検証対象に
-      // なるため（TypeScript では undefined と null は別物）
-      "sonarjs/no-undefined-assignment": "off",
       // `jest.mock<typeof import("...")>(...)` はモックファクトリに型を付ける
       // 定石で、jest/no-untyped-mock-factory の自動修正もこの形を生成する。
       // インラインの import() 型注釈を禁じるこのルールと直接衝突するため、
@@ -217,6 +220,8 @@ export const overrides = [
     // use* 命名のユーティリティを持つため rules-of-hooks が誤検出する
     files: ["e2e/**/*.{ts,tsx}"],
     rules: {
+      // 画面操作は順に進めるため逐次 await が自然
+      "eslint/no-await-in-loop": "off",
       "eslint-plugin-react-hooks/rules-of-hooks": "off",
       "sonarjs/too-many-break-or-continue-in-loop": "off",
     },
