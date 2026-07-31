@@ -83,9 +83,9 @@ bun install
    cd <消費側のアプリ> && bun lint   # 各アプリの lint に検出が組み込んである
    ```
 
-   `--report-unused-disable-directives-severity=error` が各アプリの `lint` スクリプトに入っている。ルールの無効化を共有側へ足すと、各アプリのインライン抑止が不要になることがあるので、更新後は各アプリの lint で拾う。
+   不要になったインライン抑止は共有設定の `options.reportUnusedDisableDirectives: "error"` が検出する（各アプリの `bun lint` で拾う）。ルールの無効化を共有側へ足すと、各アプリのインライン抑止が不要になることがある。
 
-   ※ 設定ファイルの `reportUnusedDisableDirectives` は oxlint 1.76 時点ではスキーマにあるだけで**実装が未対応**（`unknown field` で config のパースに失敗する）。将来対応されたら共有設定へ移して CLI フラグを畳めるので、更新時に再確認すること。
+   ※ `reportUnusedDisableDirectives` は **`options` 配下**に書く（トップレベルだと `unknown field` でパース失敗）。oxlint 1.76 で実装済みであることを 2026-07 に実測確認し、共有設定へ移して CLI フラグを畳んだ。更新時にトップレベル化やフィールド改名が起きていないか再確認すること。
 
 6. **今ある設定が下の基準を満たしたままか**（更新のたびに棚卸しする）
 
@@ -210,7 +210,7 @@ grep -n '^\s*[a-zA-Z]\+:' oxfmt.mjs   # スプレッド以外に書いている�
 
 ### 各アプリの設定も対象
 
-共有側に無効化を追加した結果、**各アプリの `oxlint.config.ts` に不要な `off` が残る**ことがある。インライン抑止は `--report-unused-disable-directives-severity=error` が自動検出するが、 **設定ファイルの `off` は自動検出されない**ので、Phase 6 の展開時に各アプリで手動確認する（該当行を一時的に外して `bunx oxlint` を回し、指摘が出なければ削除できる）。
+共有側に無効化を追加した結果、**各アプリの `oxlint.config.ts` に不要な `off` が残る**ことがある。インライン抑止は共有設定の `options.reportUnusedDisableDirectives` が自動検出するが、 **設定ファイルの `off` は自動検出されない**ので、Phase 6 の展開時に各アプリで手動確認する（該当行を一時的に外して `bunx oxlint` を回し、指摘が出なければ削除できる）。
 
 ---
 

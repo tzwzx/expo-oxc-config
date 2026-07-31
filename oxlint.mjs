@@ -226,14 +226,23 @@ export const overrides = [
   },
 ];
 
+// oxlint 1.76 で options 配下として実装済みであることを 2026-07 に実測確認。
+// トップレベルに置くと `unknown field` でパースに失敗する。
+// CLI の `--report-unused-disable-directives-severity` と同等で、共有側に置くと
+// 各アプリの lint スクリプトから CLI フラグを外せる
+export const options = {
+  reportUnusedDisableDirectives: "error",
+};
+
 /**
  * 共通設定にアプリ固有分をマージした config オブジェクトを返す。
  * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
- * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app アプリ固有の追加設定
+ * @param {{ ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
  */
 export const buildConfig = (app = {}) => ({
   extends: presets,
   ignorePatterns: [...ignorePatterns, ...(app.ignorePatterns ?? [])],
+  options: { ...options, ...app.options },
   overrides: [...overrides, ...(app.overrides ?? [])],
   rules: { ...rules, ...app.rules },
 });
@@ -241,6 +250,6 @@ export const buildConfig = (app = {}) => ({
 /**
  * 共通設定にアプリ固有分をマージして oxlint の設定として返す。
  * 各アプリの oxlint.config.ts はこれを default export するだけでよい。
- * @param {{ ignorePatterns?: string[], overrides?: object[], rules?: object }} app アプリ固有の追加設定
+ * @param {{ ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
  */
 export const defineConfig = (app = {}) => defineOxlintConfig(buildConfig(app));

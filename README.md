@@ -37,8 +37,8 @@ oxlint の JS プラグイン API はまだ `plugins-dev` 名義の不安定な�
   "@tzwzx/expo-oxc-config": "github:tzwzx/expo-oxc-config"
 },
 "scripts": {
-  // --report-unused-disable-directives-severity=error で不要になった抑止コメントを検出する
-  "lint": "oxfmt --check && oxlint --report-unused-disable-directives-severity=error",
+  // unused disable の検出は共有設定の options.reportUnusedDisableDirectives が担う
+  "lint": "oxfmt --check && oxlint",
   "fix": "oxfmt && oxlint --fix"
 }
 ```

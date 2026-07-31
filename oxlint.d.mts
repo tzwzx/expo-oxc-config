@@ -4,9 +4,11 @@ export declare const presets: OxlintConfig[];
 export declare const ignorePatterns: string[];
 export declare const rules: NonNullable<OxlintConfig["rules"]>;
 export declare const overrides: OxlintOverride[];
+export declare const options: NonNullable<OxlintConfig["options"]>;
 
 interface AppOxlintConfig {
   ignorePatterns?: string[];
+  options?: OxlintConfig["options"];
   overrides?: OxlintOverride[];
   rules?: OxlintConfig["rules"];
 }

@@ -16,6 +16,7 @@ import jsPluginsPreset from "ultracite/oxlint/js-plugins";
 import reactPreset from "ultracite/oxlint/react";
 
 import { buildConfig as buildOxfmtConfig } from "../oxfmt.mjs";
+import { buildConfig as buildOxlintConfig } from "../oxlint.mjs";
 
 const FIXTURES_DIR = new URL("../fixtures/", import.meta.url).pathname;
 
@@ -216,6 +217,49 @@ record(
   "oxfmt に ultracite の整形設定が効いている",
   fmt.error === undefined && fmt.status === 1,
   describeFmtResult()
+);
+
+// 10. unused disable の検出が共有設定の options 経由で効いているか。
+//     CLI フラグなしで root の oxlint.config.ts（defineConfig）だけを使う。
+//     options が落ちると抑止コメントが素通りする
+const oxlintMerged = buildOxlintConfig();
+const hasReportUnused =
+  oxlintMerged.options?.reportUnusedDisableDirectives === "error";
+record(
+  "共有設定に reportUnusedDisableDirectives がある",
+  hasReportUnused,
+  hasReportUnused
+    ? 'options.reportUnusedDisableDirectives = "error"'
+    : "欠落 — buildConfig の options 合成が壊れた可能性"
+);
+
+const UNUSED_PROBE = new URL("../.verify-unused-probe.ts", import.meta.url)
+  .pathname;
+writeFileSync(
+  UNUSED_PROBE,
+  `// oxlint-disable-next-line no-debugger
+export const unusedDisableProbe = 1;
+`
+);
+const unused = spawnSync(
+  "oxlint",
+  ["--disable-nested-config", ".verify-unused-probe.ts"],
+  {
+    cwd: new URL("..", import.meta.url).pathname,
+    encoding: "utf-8",
+  }
+);
+rmSync(UNUSED_PROBE, { force: true });
+const unusedDetected =
+  unused.error === undefined &&
+  unused.status === 1 &&
+  (unused.stdout + unused.stderr).includes("Unused oxlint-disable directive");
+record(
+  "options.reportUnusedDisableDirectives が効いている",
+  unusedDetected,
+  unusedDetected
+    ? "CLI フラグなしで unused disable を検知"
+    : `exit ${unused.status} — options が root config に届いていない可能性`
 );
 
 for (const check of checks) {
