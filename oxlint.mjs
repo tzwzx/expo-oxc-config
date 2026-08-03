@@ -9,7 +9,12 @@ import jsPlugins from "ultracite/oxlint/js-plugins";
 import react from "ultracite/oxlint/react";
 
 // ultracite 7.9.x で github/sonarjs/react-doctor の jsPlugins が react プリセットから
-// オプトインの js-plugins プリセットへ分離されたため、明示的に継承する（フリート標準）
+// オプトインの js-plugins プリセットへ分離されたため、明示的に継承する（フリート標準）。
+//
+// 7.10.0 では js-plugins から react-doctor の Next.js / TanStack 専用ルール 44 件が
+// next/js-plugins・tanstack/js-plugins へさらに分離された。Expo アプリでは使わない
+// ため、これらのプリセットは継承しない（分離前に置いていた nextjs 系の無効化は
+// 不要になったので削除済み）
 export const presets = [core, react, jsPlugins];
 
 // extends では ignorePatterns がマージされない（2026-07 に実測確認済み）ため、
@@ -39,8 +44,17 @@ export const rules = {
   // Hermes（Expo SDK 57 / RN 0.86）が toSorted() / toReversed() 未対応のため、
   // 不変メソッドへの書き換えを促す指摘・自動変換を無効化する
   "react-doctor/js-tosorted-immutable": "off",
-  // Expo Router アプリのため、Next.js 前提のクライアントサイドリダイレクト検査は対象外
-  "react-doctor/nextjs-no-client-side-redirect": "off",
+  // ultracite 7.10.0 が有効化したコンポーネント定義形式の統一。既定では無名
+  // コンポーネントに function 式を要求するが、React Native では forwardRef へ
+  // arrow を渡すのが標準（実測: フリート7アプリの該当2箇所とも arrow）。
+  // 名前付き・無名とも arrow にそろえる
+  "react/function-component-definition": [
+    "error",
+    {
+      namedComponents: "arrow-function",
+      unnamedComponents: "arrow-function",
+    },
+  ],
   // マウント時に一度だけ計算して以降更新しない値は `const [x] = useState(() => ...)`
   // と書くのが正しいが、このルールは [thing, setThing] の対を必須とする。
   // setter を受け取ると今度は未使用変数（sonarjs/no-unused-vars・no-dead-store）に
@@ -193,6 +207,16 @@ export const overrides = [
       "jest/valid-expect": "error",
       "jest/valid-expect-in-promise": "error",
       "jest/valid-title": "error",
+    },
+  },
+  {
+    // expo-router のルートファイル。画面・レイアウトは `export default function
+    // Screen()` の形で書くのが Expo 公式ドキュメントの定石（2026-08 に確認）。
+    // 通常のコンポーネントは arrow で統一しているため、この緩和は src/app 配下に
+    // 限る（実測: フリート7アプリの該当 80 件はすべて src/app 配下だった）
+    files: ["src/app/**/*.tsx"],
+    rules: {
+      "react/function-component-definition": "off",
     },
   },
   {

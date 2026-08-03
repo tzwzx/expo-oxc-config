@@ -8,7 +8,9 @@
  * （アプリ側で追従すればよい）、壊れているかどうかだけを見る。
  */
 import { spawnSync } from "node:child_process";
-import { rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 import oxfmtPreset from "ultracite/oxfmt";
 import corePreset from "ultracite/oxlint/core";
@@ -19,6 +21,8 @@ import { buildConfig as buildOxfmtConfig } from "../oxfmt.mjs";
 import { buildConfig as buildOxlintConfig } from "../oxlint.mjs";
 
 const FIXTURES_DIR = new URL("../fixtures/", import.meta.url).pathname;
+/** 自リポジトリ用の oxfmt 入口（消費側アプリと同じ defineConfig を通している） */
+const OXFMT_CONFIG = new URL("../oxfmt.config.ts", import.meta.url).pathname;
 
 interface Diagnostic {
   code: string;
@@ -183,8 +187,15 @@ record(
 // 9. oxfmt が ultracite の設定で実際に整形しているか（最重要）。
 //    設定が読めても中身が効いていないと、エラーも出ないまま整形が素通りする。
 //    import を逆順にしたファイルを置き、sortImports が働いて「要整形」と
-//    判定されることで、プリセットが実際に適用されていることを確かめる
-const PROBE_FILE = `${FIXTURES_DIR}.verify-probe.ts`;
+//    判定されることで、プリセットが実際に適用されていることを確かめる。
+//
+//    プローブはリポジトリ外の一時ディレクトリへ置く。oxfmt 0.62.0 から
+//    .gitignore に載ったファイルは整形対象から外れるようになり（0.61.0 では
+//    対象だった。--ignore-path を渡しても解除できない — 2026-08 に実測）、
+//    リポジトリ内に置くと「対象ファイルなし」の exit 2 で検査が空振りする。
+//    共有設定は cwd 由来の探索に頼らず --config で明示的に読ませる
+const PROBE_DIR = mkdtempSync(path.join(tmpdir(), "expo-oxc-config-verify-"));
+const PROBE_FILE = path.join(PROBE_DIR, "probe.ts");
 writeFileSync(
   PROBE_FILE,
   `import { basename } from "node:path";
@@ -196,11 +207,12 @@ export const probe = async (path: string): Promise<string> => {
 };
 `
 );
-const fmt = spawnSync("oxfmt", ["--check", ".verify-probe.ts"], {
-  cwd: FIXTURES_DIR,
-  encoding: "utf-8",
-});
-rmSync(PROBE_FILE, { force: true });
+const fmt = spawnSync(
+  "oxfmt",
+  ["--check", `--config=${OXFMT_CONFIG}`, PROBE_FILE],
+  { encoding: "utf-8" }
+);
+rmSync(PROBE_DIR, { force: true, recursive: true });
 
 // eslint 互換の exit: 0 = 差分なし / 1 = 要整形。ここでは 1 が正常
 const describeFmtResult = (): string => {
@@ -210,7 +222,11 @@ const describeFmtResult = (): string => {
   if (fmt.status === 1) {
     return "import 順の乱れを検知（sortImports が有効）";
   }
-  return `exit ${fmt.status} — 乱れた import が素通りした。プリセットが効いていない可能性`;
+  // stderr も出す。プローブが ignore されて「対象ファイルなし」になると
+  // exit 2 になり、原因がメッセージ側にしか出ない（2026-08 に遭遇）
+  const stderr = (fmt.stderr ?? "").trim();
+  const suffix = stderr === "" ? "" : `\n     ${stderr}`;
+  return `exit ${fmt.status} — 乱れた import が素通りした。プリセットが効いていない可能性${suffix}`;
 };
 
 record(

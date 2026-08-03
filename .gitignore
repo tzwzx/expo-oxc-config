@@ -14,6 +14,3 @@ AGENTS.local.md
 .rulesync/rules/.curated/
 .rulesync/skills/.curated/
 rulesync.local.jsonc
-
-# verify が一時的に作る検査用ファイル
-fixtures/.verify-probe.ts
