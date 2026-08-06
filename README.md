@@ -29,6 +29,26 @@ oxlint の JS プラグイン API はまだ `plugins-dev` 名義の不安定な�
 
 更新はこのリポジトリで一度だけ行い、各アプリは `bun update @tzwzx/expo-oxc-config` で追従する。
 
+## ツール選定の記録（2026-08 調査）
+
+「ultracite プリセット + このパッケージで一元管理」という現構成は、2026-08 に代替案を徹底調査した上で**維持を決定**した。再検討するときは、まず以下との差分だけを調べればよい。
+
+| 代替案 | 判断 | 理由 |
+| --- | --- | --- |
+| ultracite CLI（`init` / `fix`） | **不採用** | CLI は下地リンタの薄いラッパーで lint 結果は不変。`init` の生成物（AGENTS.md 追記・エディタ hooks）は rulesync / lefthook の現構成と衝突する。MCP サーバーは存在しない（実装を確認済み） |
+| `oxlint-config-universe` への乗り換え | **不採用** | Expo 公式（expo org、expo/expo 本体が使用）だが、約 130 ルール・大半 warn・`react/exhaustive-deps` off の最小主義。ultracite（約 990 ルール・error）の厳格さは AI エージェントの出力を機械的に矯正するガードレールとして採用しており、乗り換えは検査力の放棄になる。v0.0.3 で更新も停滞気味（2026-04 以降なし）。ただし **native プリセットの RN globals 定義は公式の参照実装として `oxlint.mjs` に取り込み済み** |
+| Biome への移行 | **不採用** | RN/Expo 圏の主要 OSS 10 本で採用ゼロ（tamagui は 2026-01 に Biome→oxc へ逆移行）。expo/expo 自身が 2026-06 に oxlint + oxfmt へ移行済み（[expo/expo#47096](https://github.com/expo/expo/pull/47096)）。速度も oxc が lint 2.5〜3.3x / format 3x 速い。`reactNative` ドメインは実質空（nursery 4 ルール・既定無効） |
+
+**既知の差異（意図的にそのままにしているもの）:**
+
+- oxfmt の `sortImports` は ultracite 準拠（`order: "asc"` の単純昇順）。oxlint-config-universe README が推奨する eslint-config-universe 互換のグループ分け（builtin/external → internal → parent/sibling）とは別物だが、揃える必要はないと判断した（2026-08 実測比較）
+
+**リスクと脱出路:**
+
+- ultracite は実質 1 人メンテの個人プロジェクトで、minor バージョンでプリセット再編が起きる（7.9 で github/sonarjs 統合、7.10 で js-plugins 分離）。更新時は `update-toolchain` スキルの手順で必ず横断検証する
+- ultracite が停止した場合は、その時点のプリセットの中身（ルール一覧）を `oxlint.mjs` にベイクして固定すれば、アプリ側の変更ゼロで運用を継続できる
+- ultracite に RN/Expo プリセットは無いが、メンテナは「override が必要なルールを教えてくれれば公式プリセット化したい」と表明している（[Issue #218](https://github.com/haydenbleasel/ultracite/issues/218) / [Discussion #375](https://github.com/haydenbleasel/ultracite/discussions/375)）。`oxlint.mjs` の実測付き override 集は upstream 提案の材料になる
+
 ## 使い方
 
 ```jsonc
