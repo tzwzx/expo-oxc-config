@@ -102,6 +102,20 @@ bun install
    done
    ```
 
+7. **上流に Expo / React Native 対応が現れていないか**（2026-08 調査で決めた監視点）
+
+   現構成には「上流が RN を知らない」ことを補う自前設定（RN globals、Expo Router / Hermes / RN 慣習の override 群）がある。上流が RN 対応を持てば上流へ寄せて削れる。背景は README「ツール選定の記録（2026-08 調査）」を参照。
+
+   ```bash
+   ls node_modules/ultracite/config/oxlint/       # react-native / expo プリセットが増えていないか
+   npm view oxlint-config-universe version time   # 0.0.3 (2026-04) から動いたら globals の参照元を再確認
+   npm view oxlint-config-expo version            # 404 でなくなったら Expo 公式がユーザー向け oxlint 設定を出した合図
+   ```
+
+   - ultracite に `react-native` / `expo` プリセットが増えていたら: 自前の globals・override 群との重複を突き合わせ、プリセット採用＋重複削除を Phase 4 で提案する
+   - oxlint-config-universe が更新されていたら: native プリセットの globals リスト（`npm pack` で取得するか GitHub の `native.js` を見る）と `oxlint.mjs` の globals を diff して追従する
+   - `oxlint-config-expo` が登場していたら: ツール選定の前提が変わるので、README の選定記録の再検討をユーザーに提案する（勝手に乗り換えない）
+
 ### このパッケージが持ってよいルールの基準（最重要）
 
 **共有設定に書く無効化は、次のどちらかを満たすものに限る。**
