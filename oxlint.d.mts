@@ -2,11 +2,13 @@ import type { OxlintConfig, OxlintOverride } from "oxlint";
 
 export declare const presets: OxlintConfig[];
 export declare const ignorePatterns: string[];
+export declare const globals: NonNullable<OxlintConfig["globals"]>;
 export declare const rules: NonNullable<OxlintConfig["rules"]>;
 export declare const overrides: OxlintOverride[];
 export declare const options: NonNullable<OxlintConfig["options"]>;
 
 interface AppOxlintConfig {
+  globals?: OxlintConfig["globals"];
   ignorePatterns?: string[];
   options?: OxlintConfig["options"];
   overrides?: OxlintOverride[];

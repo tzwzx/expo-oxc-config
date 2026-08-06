@@ -21,6 +21,37 @@ export const presets = [core, react, jsPlugins];
 // トップレベルで必ず再宣言する。https://docs.ultracite.ai/provider/oxlint
 export const ignorePatterns = [...(core.ignorePatterns ?? [])];
 
+// React Native / Hermes ランタイムのグローバル。ultracite core は env: { browser: true }
+// をハードコードしており（RN プリセットを持たないため）、RN 固有のグローバルを知らない。
+// リストは Expo 公式の oxlint-config-universe@0.0.3 の native プリセットと同一
+// （2026-08 に確認。独自判断を避けるため公式の参照実装をそのまま使う）。
+// 効果は実測済み: 未宣言だと `__DEV__ = ...` が no-implicit-globals（グローバル変数
+// リーク）と誤検出され、readonly 宣言後は no-global-assign（読み取り専用グローバル
+// への代入）として正しく検出される
+export const globals = {
+  Atomics: "readonly",
+  ErrorUtils: "readonly",
+  FormData: "readonly",
+  SharedArrayBuffer: "readonly",
+  XMLHttpRequest: "readonly",
+  __DEV__: "readonly",
+  alert: "readonly",
+  cancelAnimationFrame: "readonly",
+  cancelIdleCallback: "readonly",
+  clearImmediate: "readonly",
+  clearInterval: "readonly",
+  clearTimeout: "readonly",
+  fetch: "readonly",
+  navigator: "readonly",
+  process: "readonly",
+  requestAnimationFrame: "readonly",
+  requestIdleCallback: "readonly",
+  setImmediate: "readonly",
+  setInterval: "readonly",
+  setTimeout: "readonly",
+  window: "readonly",
+};
+
 export const rules = {
   // Expo Router の特殊ファイル名（_layout, [id], (group), +not-found 等）と
   // kebab-case 強制ルールが衝突するため無効化
@@ -261,10 +292,11 @@ export const options = {
 /**
  * 共通設定にアプリ固有分をマージした config オブジェクトを返す。
  * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
- * @param {{ ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
+ * @param {{ globals?: object, ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
  */
 export const buildConfig = (app = {}) => ({
   extends: presets,
+  globals: { ...globals, ...app.globals },
   ignorePatterns: [...ignorePatterns, ...(app.ignorePatterns ?? [])],
   options: { ...options, ...app.options },
   overrides: [...overrides, ...(app.overrides ?? [])],
@@ -274,6 +306,6 @@ export const buildConfig = (app = {}) => ({
 /**
  * 共通設定にアプリ固有分をマージして oxlint の設定として返す。
  * 各アプリの oxlint.config.ts はこれを default export するだけでよい。
- * @param {{ ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
+ * @param {{ globals?: object, ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
  */
 export const defineConfig = (app = {}) => defineOxlintConfig(buildConfig(app));
