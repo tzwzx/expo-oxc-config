@@ -8,7 +8,6 @@ AGENTS.local.md
 .claude/*
 !.claude/settings.local.json
 .cursor/
-.codex/
 .agents/
 .rulesync/rules/*.local.md
 .rulesync/rules/.curated/
