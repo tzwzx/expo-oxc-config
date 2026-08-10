@@ -3,12 +3,18 @@
   "targets": {
     "cursor": ["rules"],
     "claudecode": ["rules", "skills"],
+    "agentsmd": { "rules": { "ruleDiscoveryMode": "none" } },
   },
   "sources": [
     {
       "source": "https://github.com/tzwzx/expo-ai-standards.git",
       "transport": "git",
-      "rules": ["en-critical-rules", "ja-commit-message"],
+      "rules": [
+        "en-claudecode-entry",
+        "en-critical-rules",
+        "en-rules-architecture",
+        "ja-commit-message",
+      ],
     },
   ],
   "delete": true,
