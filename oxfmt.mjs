@@ -15,11 +15,6 @@ export const buildConfig = (app = {}) => ({
   ...ultracite,
   ignorePatterns: [
     ...(ultracite.ignorePatterns ?? []),
-    // store-shots の生成物（ストアスクショの HTML/PNG）は git 追跡するが整形しない。
-    // oxfmt は .html も整形対象にするため（2026-08-06 実測）、生成器の出力次第で
-    // oxfmt --check が落ちる（sync で実際に発生。他リポは偶然通っているだけ）。
-    // store-shots を持たないリポではマッチするファイルが無く無害なので共通で除外する
-    "store-shots/output/**",
     ...(app.ignorePatterns ?? []),
   ],
 });

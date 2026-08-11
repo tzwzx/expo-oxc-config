@@ -69,7 +69,7 @@ import { defineConfig } from "@tzwzx/expo-oxc-config/oxlint";
 
 export default defineConfig({
   // アプリ固有分だけを書く
-  ignorePatterns: ["store-shots/**"],
+  ignorePatterns: [],
   overrides: [],
   rules: {},
 });
