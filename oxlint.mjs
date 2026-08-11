@@ -60,6 +60,11 @@ export const rules = {
   // 「直前の要素へフォーカスを戻せ」という指摘は DOM のフォーカス管理を
   // 前提としており、RN には当てはまらない（github プラグインは Web 向け）
   "github/no-blur": "off",
+  // 中身が空の JSDoc ブロック（`/** */`）を禁止する。oxlint 1.78 の新ルールで、
+  // ultracite は jsdoc の品質ルールを 22 件（empty-tags 含む）採用しているが
+  // 新規追加ゆえ未追従なだけのため、方針に沿って先取りする
+  // （2026-08 実測: フリート7アプリと自リポジトリのいずれも新規指摘 0 件）
+  "jsdoc/no-blank-blocks": "error",
   // RN / Expo では `require` が必要な場面が4つある。いずれも import では書けない:
   //   1. 画像アセット（`require("./x.png")`）— Expo は *.png の型を宣言しておらず、
   //      import にすると型解決できない（実測確認）。公式ドキュメントも require を使う
@@ -69,6 +74,12 @@ export const rules = {
   //      各パッケージ公式モックの読み込みに require が必須（jest.setup.ts）
   //   4. app.config.ts — Node のコンテキストで評価されるため CommonJS 由来の API を使う
   "node/global-require": "off",
+  // `const a = 1, b = 2;` のまとめ書きを禁止し、1宣言1文にそろえる。oxlint 1.78 の
+  // 新ルール。**既定値は逆向きの "always"（まとめろ）**で、そのまま有効化すると
+  // フリート合計 6,254 件の指摘になる（2026-08 実測）ため "never" の明示が必須。
+  // ultracite は未採用だが no-var は採用済みで、宣言スタイルの方針としては整合する
+  // （"never" での実測はフリート7アプリと自リポジトリのいずれも 0 件）
+  "one-var": ["error", "never"],
   // setTimeout や旧来のコールバック API を await するには new Promise で
   // 包むしかない。RN / Expo の API にはコールバック形式が残っている
   "promise/avoid-new": "off",
