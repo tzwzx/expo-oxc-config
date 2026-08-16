@@ -18,7 +18,7 @@
   "scripts": {
     "verify": "bun scripts/verify.ts",
     "rulesync": "bunx rulesync install && bunx rulesync generate && .rulesync/scripts/post-generate.sh",
-    "rulesync:check": "bunx rulesync install --frozen && bunx rulesync generate && .rulesync/scripts/post-generate.sh && git diff --exit-code -- rulesync.lock .cursorrules",
+    "rulesync:check": "bunx rulesync doctor --strict && bunx rulesync install --frozen && bunx rulesync generate --check && .rulesync/scripts/post-generate.sh && git diff --exit-code -- rulesync.lock .cursorrules",
     "lint": "oxfmt --check --disable-nested-config && oxlint --disable-nested-config",
     "fix": "oxfmt --disable-nested-config && oxlint --disable-nested-config --fix"
   },
