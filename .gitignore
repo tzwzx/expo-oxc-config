@@ -1,15 +1,17 @@
 node_modules/
 
 # rulesync の生成物（編集元は .rulesync/ 配下）
-CLAUDE.md
 CLAUDE.local.md
-AGENTS.md
 AGENTS.local.md
 .claude/*
+!.claude/rules/
 !.claude/settings.local.json
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/hooks.json
 .agents/
-.codex/
+.codex/*
+!.codex/hooks.json
 .rulesync/rules/*.local.md
 .rulesync/rules/.curated/
 .rulesync/skills/.curated/
