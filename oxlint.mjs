@@ -19,7 +19,16 @@ export const presets = [core, react, jsPlugins];
 
 // extends では ignorePatterns がマージされない（2026-07 に実測確認済み）ため、
 // トップレベルで必ず再宣言する。https://docs.ultracite.ai/provider/oxlint
-export const ignorePatterns = [...(core.ignorePatterns ?? [])];
+// rulesync の生成物も併せて除外する（生成物を git 追跡するようにした 2026-08 以降、
+// gitignore による暗黙の除外が効かなくなったため）。
+export const ignorePatterns = [
+  ...(core.ignorePatterns ?? []),
+  ".claude/rules/**",
+  ".cursor/rules/**",
+  ".agents/memories/**",
+  "AGENTS.md",
+  "CLAUDE.md",
+];
 
 // React Native / Hermes ランタイムのグローバル。ultracite core は env: { browser: true }
 // をハードコードしており（RN プリセットを持たないため）、RN 固有のグローバルを知らない。

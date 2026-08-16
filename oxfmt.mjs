@@ -6,6 +6,17 @@
 import { defineConfig as defineOxfmtConfig } from "oxfmt";
 import ultracite from "ultracite/oxfmt";
 
+// rulesync が書き出すファイル。整形しても次の generate で上書きされるうえ、
+// 生成物を git 追跡するようにした 2026-08 以降は gitignore による暗黙の除外が
+// 効かなくなったため、明示的に除外する。
+export const generatedRulePatterns = [
+  ".claude/rules/**",
+  ".cursor/rules/**",
+  ".agents/memories/**",
+  "AGENTS.md",
+  "CLAUDE.md",
+];
+
 /**
  * ultracite プリセットにアプリ固有の ignorePatterns をマージした config を返す。
  * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
@@ -15,6 +26,7 @@ export const buildConfig = (app = {}) => ({
   ...ultracite,
   ignorePatterns: [
     ...(ultracite.ignorePatterns ?? []),
+    ...generatedRulePatterns,
     ...(app.ignorePatterns ?? []),
   ],
 });
