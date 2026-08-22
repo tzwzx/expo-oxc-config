@@ -69,11 +69,6 @@ export const rules = {
   // 「直前の要素へフォーカスを戻せ」という指摘は DOM のフォーカス管理を
   // 前提としており、RN には当てはまらない（github プラグインは Web 向け）
   "github/no-blur": "off",
-  // 中身が空の JSDoc ブロック（`/** */`）を禁止する。oxlint 1.78 の新ルールで、
-  // ultracite は jsdoc の品質ルールを 22 件（empty-tags 含む）採用しているが
-  // 新規追加ゆえ未追従なだけのため、方針に沿って先取りする
-  // （2026-08 実測: フリート7アプリと自リポジトリのいずれも新規指摘 0 件）
-  "jsdoc/no-blank-blocks": "error",
   // RN / Expo では `require` が必要な場面が4つある。いずれも import では書けない:
   //   1. 画像アセット（`require("./x.png")`）— Expo は *.png の型を宣言しておらず、
   //      import にすると型解決できない（実測確認）。公式ドキュメントも require を使う
@@ -83,18 +78,29 @@ export const rules = {
   //      各パッケージ公式モックの読み込みに require が必須（jest.setup.ts）
   //   4. app.config.ts — Node のコンテキストで評価されるため CommonJS 由来の API を使う
   "node/global-require": "off",
-  // `const a = 1, b = 2;` のまとめ書きを禁止し、1宣言1文にそろえる。oxlint 1.78 の
-  // 新ルール。**既定値は逆向きの "always"（まとめろ）**で、そのまま有効化すると
-  // フリート合計 6,254 件の指摘になる（2026-08 実測）ため "never" の明示が必須。
-  // ultracite は未採用だが no-var は採用済みで、宣言スタイルの方針としては整合する
-  // （"never" での実測はフリート7アプリと自リポジトリのいずれも 0 件）
-  "one-var": ["error", "never"],
   // setTimeout や旧来のコールバック API を await するには new Promise で
   // 包むしかない。RN / Expo の API にはコールバック形式が残っている
   "promise/avoid-new": "off",
   // Hermes（Expo SDK 57 / RN 0.86）が toSorted() / toReversed() 未対応のため、
   // 不変メソッドへの書き換えを促す指摘・自動変換を無効化する
   "react-doctor/js-tosorted-immutable": "off",
+  // oxlint 1.79.0 で単一ルール react/react-compiler が診断カテゴリ別の 22 ルールへ
+  // 分割された（breaking change。旧 ID は削除されており、残すと設定パースに失敗する）。
+  // 分割前は「RN の慣用パターンと相性が悪い」という理由でまとめて off にしていたが、
+  // カテゴリごとに分かれたことで誤検出と本物の指摘を切り分けられるようになったため、
+  // 下記 6 件だけを無効化し、残り 16 件は有効にする（2026-08 にフリート8アプリで実測。
+  // 有効化で残る新規指摘は exhaustive-effect-dependencies 11 件と set-state-in-effect
+  // 3 件で、いずれも本物。前者は既存の react/exhaustive-deps と検出箇所の重複が 0 件）。
+  //
+  // 分割後の 22 ルールはいずれもオプションを取れない（スキーマ上 RuleNoConfig）ため、
+  // 誤検出の回避は off 以外に手段が無い。
+  // フリート全アプリが app.config.ts で experiments.reactCompiler: true にしているので、
+  // 誤検出でないものは「実際に最適化が効かない箇所」を指しており潰す価値がある。
+
+  // gesture-handler の Gesture.Pan() など、大文字始まりのビルダー関数呼び出しを
+  // 「JSX なしで呼ばれたコンポーネント」と誤検出する（実測: 3アプリ7件がすべて
+  // Gesture.Pan）。ライブラリ側の命名なのでリネームでは解消できない
+  "react/capitalized-calls": "off",
   // ultracite 7.10.0 が有効化したコンポーネント定義形式の統一。既定では無名
   // コンポーネントに function 式を要求するが、React Native では forwardRef へ
   // arrow を渡すのが標準（実測: フリート7アプリの該当2箇所とも arrow）。
@@ -112,19 +118,38 @@ export const rules = {
   // なるため両立しない（複数アプリで実測確認）。同じ形が広く現れるため、
   // 命名規約より凍結値の正しい表現を優先する
   "react/hook-use-state": "off",
+  // reanimated の共有値書き込み（sharedValue.value = ...）を「hook の戻り値を
+  // 変更している」と誤検出する。"worklet" ディレクティブ付きのコールバックは
+  // UI スレッドで動くものであって render ではないが、React Compiler は worklet を
+  // 解さない（実測: 6件すべて Gesture.Pan().onBegin 等の worklet 内）
+  "react/immutability": "off",
   // React Compiler が Context value の安定参照を自動メモ化するため、手動メモ化を
   // 促すこのルールは react-compiler-no-manual-memoization と矛盾する
   "react/jsx-no-constructed-context-values": "off",
   // react-navigation の headerLeft/headerRight は「要素を返す関数」を受け取る API のため、
   // props 経由のコンポーネント生成を許可する
   "react/no-unstable-nested-components": ["error", { allowAsProps: true }],
-  // oxlint の react-compiler は reanimated の共有値参照や Gesture.Pan() を
-  // コンポーネントと誤検出し、意図的な exhaustive-deps 抑制まで error にする。
-  // React Native の慣用パターンと相性が悪いためフリート全体で無効化する
-  "react/react-compiler": "off",
+  // worklet 内の Date.now() を「render 中の不純関数呼び出し」と誤検出する。
+  // immutability と同じく worklet を解さないことに由来する（実測: 5件）
+  "react/purity": "off",
+  // gesture-handler の onEnd コールバック内の ref 参照を「render 中の ref アクセス」と
+  // 誤検出する。このコールバックはジェスチャー確定時に非同期で呼ばれるもので、
+  // render 中には実行されない（実測: 1件）
+  "react/refs": "off",
+  // exhaustive-deps を意図的に抑制した箇所を「最適化を妨げる抑制」として再び error に
+  // するため、抑制そのものが成立しなくなる（抑制を消すための抑制が要る）。
+  // ルール同士が構造的に両立しない組み合わせ（実測: 3件とも exhaustive-deps を
+  // 対象にした抑止コメントへの指摘。ここに実物の抑止行を例として書くと oxlint が
+  // 本物のディレクティブと解釈するため、文言で示している）
+  "react/rule-suppression": "off",
   // expo-status-bar の StatusBar は style prop に文字列 enum（"auto" | "light" | "dark"）を
   // 取るため、オブジェクト限定チェックから除外する
   "react/style-prop-object": ["error", { allow: ["StatusBar"] }],
+  // React Compiler 自身の未実装（BuildHIR の積み残し）を報告するもので、ユーザーコードの
+  // 欠陥ではない。try/finally と動的 import() という正当な構文に対して
+  // 「React Compiler が扱える構文へ書き換えろ」と要求するため、従うとコードが劣化する
+  // （実測: 9件すべて try/finally か import()）
+  "react/todo": "off",
   // React コンポーネントの function 宣言（PascalCase）を許容する
   // （既定の '^[_a-z][a-zA-Z0-9]*$' はコンポーネントを誤検知する）
   "sonarjs/function-name": ["error", { format: "^_?[a-zA-Z][a-zA-Z0-9]*$" }],
