@@ -5,7 +5,7 @@
 // 直接参照しなくて済む（＝アプリの package.json に oxlint を書かなくてよい）。
 import { defineConfig as defineOxlintConfig } from "oxlint";
 import core from "ultracite/oxlint/core";
-import jsPlugins from "ultracite/oxlint/js-plugins";
+import jsPlugins, { jsPluginSettings } from "ultracite/oxlint/js-plugins";
 import react from "ultracite/oxlint/react";
 
 // ultracite 7.9.x で github/sonarjs/react-doctor の jsPlugins が react プリセットから
@@ -16,6 +16,20 @@ import react from "ultracite/oxlint/react";
 // ため、これらのプリセットは継承しない（分離前に置いていた nextjs 系の無効化は
 // 不要になったので削除済み）
 export const presets = [core, react, jsPlugins];
+
+// react-doctor 0.9.x は oxc/react-refresh 由来のルール（only-export-components など）を
+// 「フレームワーク検出なし・ルートファイル判定なし」の簡略モードで動かすようになった。
+// このモードだと Provider と同居する `useXxx` エクスポートや expo-router の
+// `_layout.tsx`（Sentry.wrap 済みの default export）が軒並み誤検出になる。
+// ultracite が用意した settings で、ルール選定が前提としている curated 挙動に戻す。
+//
+// ⚠️ oxlint は extends 元の `settings` をマージしない（ultracite 側にも明記あり）。
+// jsPlugins プリセットが settings を持っていても効かないので、
+// **ルート設定である buildConfig の戻り値に必ず載せる**こと。
+// 2026-08 実測: 未設定だとフリート7アプリ合計 70 件の only-export-components が出る
+// （sync 9 / expo-boilerplate 2 / kata 21 / shikaku-collection 17 / widget-now 7 /
+// yaboyo 12 / yugaku 2）。全アプリの `_layout.tsx` が同一原因で発火していた
+export const settings = jsPluginSettings;
 
 // extends では ignorePatterns がマージされない（2026-07 に実測確認済み）ため、
 // トップレベルで必ず再宣言する。https://docs.ultracite.ai/provider/oxlint
@@ -337,7 +351,7 @@ export const options = {
 /**
  * 共通設定にアプリ固有分をマージした config オブジェクトを返す。
  * 通常は defineConfig を使う（こちらは組み立て結果だけが欲しい場合の逃げ道）。
- * @param {{ globals?: object, ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
+ * @param {{ globals?: object, ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object, settings?: object }} app アプリ固有の追加設定
  */
 export const buildConfig = (app = {}) => ({
   extends: presets,
@@ -346,11 +360,12 @@ export const buildConfig = (app = {}) => ({
   options: { ...options, ...app.options },
   overrides: [...overrides, ...(app.overrides ?? [])],
   rules: { ...rules, ...app.rules },
+  settings: { ...settings, ...app.settings },
 });
 
 /**
  * 共通設定にアプリ固有分をマージして oxlint の設定として返す。
  * 各アプリの oxlint.config.ts はこれを default export するだけでよい。
- * @param {{ globals?: object, ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object }} app アプリ固有の追加設定
+ * @param {{ globals?: object, ignorePatterns?: string[], options?: object, overrides?: object[], rules?: object, settings?: object }} app アプリ固有の追加設定
  */
 export const defineConfig = (app = {}) => defineOxlintConfig(buildConfig(app));
