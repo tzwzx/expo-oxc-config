@@ -25,9 +25,9 @@
   "dependencies": {
     "eslint-plugin-github": "6.1.2",
     "eslint-plugin-sonarjs": "4.2.0",
-    "oxfmt": "0.63.0",
-    "oxlint": "1.78.0",
-    "oxlint-plugin-react-doctor": "0.9.11",
-    "ultracite": "7.10.2"
+    "oxfmt": "0.64.0",
+    "oxlint": "1.79.0",
+    "oxlint-plugin-react-doctor": "0.9.12",
+    "ultracite": "7.10.6"
   }
 }
