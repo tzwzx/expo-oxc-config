@@ -3,9 +3,7 @@ node_modules/
 # rulesync の生成物（編集元は .rulesync/ 配下）
 CLAUDE.local.md
 AGENTS.local.md
-.claude/*
-!.claude/rules/
-!.claude/settings.local.json
+.claude/
 .cursor/*
 !.cursor/rules/
 !.cursor/hooks.json

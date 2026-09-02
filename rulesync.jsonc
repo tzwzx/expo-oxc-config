@@ -2,8 +2,6 @@
   "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
   "targets": {
     "cursor": ["rules"],
-    "claudecode": ["rules", "skills"],
-    "agentsmd": { "rules": { "ruleDiscoveryMode": "none" } },
   },
   "sources": [
     {
