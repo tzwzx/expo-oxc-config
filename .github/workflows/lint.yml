@@ -5,10 +5,6 @@ on: [push]
 jobs:
   lint:
     uses: tzwzx/expo-workflows/.github/workflows/lint.yml@main
-    secrets:
-      # private な rulesync ソース（tzwzx/expo-ai-standards）を CI から引くための読み取りトークン
-      RULESYNC_TOKEN: ${{ secrets.RULESYNC_TOKEN }}
     with:
       commands: |
-        bun rulesync:check
         bun lint

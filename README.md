@@ -6,10 +6,8 @@ Expo アプリ群で共有する **oxlint / oxfmt のツールチェーン一式
 
 > 🤖 **このリポジトリを変更する前に読むもの**
 >
-> - [`.rulesync/rules/general.md`](.rulesync/rules/general.md) — 破ると静かに壊れる罠（ここが最優先）
-> - [`.rulesync/skills/update-toolchain/SKILL.md`](.rulesync/skills/update-toolchain/SKILL.md) — パッケージ更新・ルール追加・設定スリム化の全手順と判断基準
->
-> どちらも rulesync の**編集元**。`AGENTS.md` / `.claude/skills/` は `bun rulesync` の生成物で gitignore 対象なので、クローン直後には存在しない（生成物を直接編集しないこと）。
+> - [`.cursor/rules/general.mdc`](.cursor/rules/general.mdc) — 破ると静かに壊れる罠（ここが最優先）
+> - [`.cursor/skills/update-toolchain/SKILL.md`](.cursor/skills/update-toolchain/SKILL.md) — パッケージ更新・ルール追加・設定スリム化の全手順と判断基準
 >
 > ここの変更は **Expo アプリ7本すべてに一斉に効く**。`bun verify` と `bun lint` を通さずに push しないこと。
 
@@ -35,7 +33,7 @@ oxlint の JS プラグイン API はまだ `plugins-dev` 名義の不安定な�
 
 | 代替案 | 判断 | 理由 |
 | --- | --- | --- |
-| ultracite CLI（`init` / `fix`） | **不採用** | CLI は下地リンタの薄いラッパーで lint 結果は不変。`init` の生成物（AGENTS.md 追記・エディタ hooks）は rulesync / lefthook の現構成と衝突する。MCP サーバーは存在しない（実装を確認済み） |
+| ultracite CLI（`init` / `fix`） | **不採用** | CLI は下地リンタの薄いラッパーで lint 結果は不変。`init` の生成物（AGENTS.md 追記・エディタ hooks）は `.cursor/` / lefthook の現構成と衝突する。MCP サーバーは存在しない（実装を確認済み） |
 | `oxlint-config-universe` への乗り換え | **不採用** | Expo 公式（expo org、expo/expo 本体が使用）だが、約 130 ルール・大半 warn・`react/exhaustive-deps` off の最小主義。ultracite（約 990 ルール・error）の厳格さは AI エージェントの出力を機械的に矯正するガードレールとして採用しており、乗り換えは検査力の放棄になる。v0.0.3 で更新も停滞気味（2026-04 以降なし）。ただし **native プリセットの RN globals 定義は公式の参照実装として `oxlint.mjs` に取り込み済み** |
 | Biome への移行 | **不採用** | RN/Expo 圏の主要 OSS 10 本で採用ゼロ（tamagui は 2026-01 に Biome→oxc へ逆移行）。expo/expo 自身が 2026-06 に oxlint + oxfmt へ移行済み（[expo/expo#47096](https://github.com/expo/expo/pull/47096)）。速度も oxc が lint 2.5〜3.3x / format 3x 速い。`reactNative` ドメインは実質空（nursery 4 ルール・既定無効） |
 
@@ -88,7 +86,7 @@ export default defineConfig({ ignorePatterns: [] });
 
 ルールの off は「スコープを絞った `overrides` + 恒久的に妥当な理由」または「該当1行の `oxlint-disable-next-line` + 理由」のいずれかにする。「あとで直す」類の暫定 off は置かない。
 
-共有側に置いてよい無効化と、アプリ側へ委ねるべき無効化の判断基準は [`update-toolchain` スキル](.rulesync/skills/update-toolchain/SKILL.md)に書いてある。
+共有側に置いてよい無効化と、アプリ側へ委ねるべき無効化の判断基準は [`update-toolchain` スキル](.cursor/skills/update-toolchain/SKILL.md)に書いてある。
 
 ## 更新の手順（重要）
 

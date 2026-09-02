@@ -6,9 +6,7 @@
 import { defineConfig as defineOxfmtConfig } from "oxfmt";
 import ultracite from "ultracite/oxfmt";
 
-// rulesync が書き出すファイル。整形しても次の generate で上書きされるうえ、
-// 生成物を git 追跡するようにした 2026-08 以降は gitignore による暗黙の除外が
-// 効かなくなったため、明示的に除外する。
+// AI ルール断片とエージェント向け文書。整形対象外。
 export const generatedRulePatterns = [
   ".claude/rules/**",
   ".cursor/rules/**",

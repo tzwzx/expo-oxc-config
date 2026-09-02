@@ -17,8 +17,6 @@
   },
   "scripts": {
     "verify": "bun scripts/verify.ts",
-    "rulesync": "bash .rulesync/scripts/run.sh generate",
-    "rulesync:check": "bash .rulesync/scripts/run.sh check",
     "lint": "oxfmt --check --disable-nested-config && oxlint --disable-nested-config",
     "fix": "oxfmt --disable-nested-config && oxlint --disable-nested-config --fix"
   },

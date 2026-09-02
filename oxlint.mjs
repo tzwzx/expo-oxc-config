@@ -33,8 +33,7 @@ export const settings = jsPluginSettings;
 
 // extends では ignorePatterns がマージされない（2026-07 に実測確認済み）ため、
 // トップレベルで必ず再宣言する。https://docs.ultracite.ai/provider/oxlint
-// rulesync の生成物も併せて除外する（生成物を git 追跡するようにした 2026-08 以降、
-// gitignore による暗黙の除外が効かなくなったため）。
+// AI ルール断片とエージェント向け文書も除外する。
 export const ignorePatterns = [
   ...(core.ignorePatterns ?? []),
   ".claude/rules/**",
