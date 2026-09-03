@@ -1,315 +1,83 @@
 ---
 name: update-toolchain
 description: >-
-  expo-oxc-config が所有する lint ツールチェーン（oxlint / oxfmt / ultracite と JS プラグイン3種）を最新版へ更新し、新バージョンのベストプラクティスに設定を追従させ、 使えそうな新機能を提案し、設定しているルール（無効化を含む）が Expo プロジェクトとして 適切かを棚卸しし、デフォルト値や継承元と同値になった冗長な記述を削除して設定をスリムにし、 壊れていないかのスモークテスト（bun verify）まで回すスキル。 「パッケージを更新して」「oxlint を最新に」「ツールチェーンを上げて」「lint まわりを最新化して」 「ultracite を更新して」「依存を最新にして」「無効化しているルールを見直して」 「共通パッケージに寄せられないか」「設定をスリムにして」「冗長な設定を削除して」 「/update-toolchain」などのリクエストで使用する。 このリポジトリでのパッケージ更新・バージョン上げに少しでも関連する依頼なら、 明示的にスキル名を言われなくても積極的にこのスキルを使うこと。
+  expo-oxc-config が所有する oxfmt / ultracite を最新版へ更新し、 bun verify と bun lint まで回すスキル。「パッケージを更新して」「oxfmt を最新に」 「ツールチェーンを上げて」「ultracite を更新して」などの依頼で使う。
 ---
 
 # ツールチェーン更新
 
-このリポジトリの更新は **消費側の Expo アプリすべてに一斉に効く**。アプリ側の package.json には `oxlint` / `oxfmt` / `ultracite` が無く、ここが配るバイナリと設定で全アプリの `bun lint` が動いているため、壊した状態で push すると次に追従したアプリから順に lint が動かなくなる。
+このリポジトリの更新は **消費側の Expo アプリすべてに一斉に効く**。アプリ側の package.json には `oxfmt` / `ultracite` が無く、ここが配るバイナリと設定で全アプリの `bun lint` が動いている。壊した状態で push すると次に追従したアプリから順に整形が動かなくなる。
 
-だからこのスキルの本体は「バージョンを上げること」ではなく、**上げた結果が壊れていないと確かめること**にある。
-
-## 前提の確認
-
-作業前に `.cursor/rules/general.mdc` を読む。特に「破ると静かに壊れる罠」の節は今回の更新で踏み抜きうるものばかりなので必ず把握しておくこと。
-
----
+作業前に `.cursor/rules/general.mdc` を読む。
 
 ## Phase 1: 現状の記録
 
-更新前の状態を残す。あとで「何が変わって何が壊れたか」を切り分けるのに使う。
-
 ```bash
-bun verify                    # 更新前は必ず緑のはず。ここで落ちるなら先に原因を潰す
-cat package.json              # 現在のバージョンを控える
-ls node_modules/ultracite/config/oxlint/   # ultracite が提供するプリセット一覧を控える
+bun verify
+cat package.json
 ```
-
-最後のコマンドは Phase 3 で「プリセットが増減していないか」を比べるために使う。
-
----
 
 ## Phase 2: 更新
 
 ```bash
-bunx npm-check-updates -u     # package.json のバージョンを最新へ書き換える
+bunx npm-check-updates -u
 bun install
 ```
 
-- **バージョンは完全固定（exact）を維持する。** `^` や `~` を付けない（フリート共通の syncpack 規約に合わせている）。 `npm-check-updates` は既存の書式を保つので通常はそのままでよいが、差分で確認すること
-- メジャーバージョンが上がったパッケージは Phase 3 で重点的に扱う
+バージョンは完全固定（exact）を維持する。`^` や `~` を付けない。
 
----
+## Phase 3: 追従
 
-## Phase 3: 新バージョンへの追従（このスキルの主眼）
+Context7 MCP で最新仕様を確認する。MCP が使えない場合は推測で進めず、状況を報告する。
 
-**バージョンを上げただけで終わらせない。** 更新したパッケージそれぞれについて、設定の書き方が変わっていないか・新しい推奨があるかを調べる。
+必ず確認する項目:
 
-### 調べ方
+1. **oxfmt の合成方法が変わっていないか**
 
-- **Context7 MCP で最新仕様を確認する**（ライブラリの使用箇所を編集するときの共通ルール）。MCP が使えない場合は勝手に推測で進めず、状況を報告して指示を仰ぐこと
-- CHANGELOG / リリースノートを読む。メジャー更新なら移行ガイドも読む
-- `bunx oxlint --help` / `bunx oxfmt --help` を更新前後で比べると、追加・削除されたオプションが見える
+   oxfmt は `extends` を解釈しない前提で `{ ...ultracite }` のスプレッドで合成している。この前提が変わると、エラーも出ないまま整形が素通りする。`bun verify` の「oxfmt に ultracite の整形設定が効いている」がこれを検知する。
 
-### 必ず確認する項目
+2. **非推奨になった設定が残っていないか**
 
-1. **ultracite のプリセット構成が変わっていないか**
+3. **上流に新しい整形オプションが無いか**
 
-   ```bash
-   ls node_modules/ultracite/config/oxlint/
-   ```
+   整形結果が変わるものは全アプリに差分が出るので、採用するかをユーザーに確認する。勝手に入れない。
 
-   Phase 1 で控えた一覧と比べる。**プリセットの分離・改名は実際に起きている** （7.9.3 で `js-plugins` が `react` から分離され、追従できていないリポで一部ルールが黙って無効化された）。
-   - 現在 import しているのは `core` / `react` / `js-plugins` と `ultracite/oxfmt`
-   - 新しいプリセットが増えていたら Phase 4 で採用を提案する
-   - import しているプリセットが消えていたら即座にエラーになるので気づける
-
-2. **oxfmt の合成方法が変わっていないか**
-
-   oxfmt は `extends` を解釈しない前提で `{ ...ultracite }` のスプレッドで合成している。 **この前提が変わると、エラーも出ないまま整形が素通りする**（過去に実際に発生した事故）。 `bun verify` の「oxfmt に ultracite の整形設定が効いている」がこれを検知する。
-
-3. **oxlint のルール ID が変わっていないか**
-
-   共有設定が名前で参照しているルール（`sonarjs/no-wildcard-import` など）が改名・削除されると **設定パース時にエラーになる**ので、これは静かには壊れない。`bun verify` が拾う。
-
-4. **非推奨になった設定が残っていないか**
-
-   警告が出ていないか確認し、出ていれば新しい書き方へ移す。
-
-5. **不要になった抑止コメントが残っていないか**
-
-   ```bash
-   cd <消費側のアプリ> && bun lint   # 各アプリの lint に検出が組み込んである
-   ```
-
-   不要になったインライン抑止は共有設定の `options.reportUnusedDisableDirectives: "error"` が検出する（各アプリの `bun lint` で拾う）。ルールの無効化を共有側へ足すと、各アプリのインライン抑止が不要になることがある。
-
-   ※ `reportUnusedDisableDirectives` は **`options` 配下**に書く（トップレベルだと `unknown field` でパース失敗）。oxlint 1.76 で実装済みであることを 2026-07 に実測確認し、共有設定へ移して CLI フラグを畳んだ。更新時にトップレベル化やフィールド改名が起きていないか再確認すること。
-
-6. **今ある設定が下の基準を満たしたままか**（更新のたびに棚卸しする）
-
-   ルールの挙動が変わったり、リファクタで無効化が不要になっていたりする。更新は**設定を見直す定期点検の機会**でもあるので、次を確認すること。
-
-   - 共有設定の `off` が今も基準1か基準2を満たしているか。満たさなくなったものは各アプリのファイル単位へ降ろす（またはリファクタで有効化する）
-   - 各アプリの `oxlint.config.ts` に、全アプリ共通の理由で同じ無効化が並んでいないか。並んでいたら共有側へ引き上げる（ただし基準を満たす場合のみ）
-   - 各アプリの無効化が**ファイル単位にスコープされているか**。アプリ全体に効く `rules` として書かれているものは、対象ファイルへ絞れないか検討する
-
-   ```bash
-   # 各アプリの固有設定を並べて見比べる
-   for d in $(bun scripts/list-consumers.ts); do
-     echo "=== $d ==="; cat "$d/oxlint.config.ts"
-   done
-   ```
-
-7. **上流に Expo / React Native 対応が現れていないか**（2026-08 調査で決めた監視点）
-
-   現構成には「上流が RN を知らない」ことを補う自前設定（RN globals、Expo Router / Hermes / RN 慣習の override 群）がある。上流が RN 対応を持てば上流へ寄せて削れる。背景は README「ツール選定の記録（2026-08 調査）」を参照。
-
-   ```bash
-   ls node_modules/ultracite/config/oxlint/       # react-native / expo プリセットが増えていないか
-   npm view oxlint-config-universe version time   # 0.0.3 (2026-04) から動いたら globals の参照元を再確認
-   npm view oxlint-config-expo version            # 404 でなくなったら Expo 公式がユーザー向け oxlint 設定を出した合図
-   ```
-
-   - ultracite に `react-native` / `expo` プリセットが増えていたら: 自前の globals・override 群との重複を突き合わせ、プリセット採用＋重複削除を Phase 4 で提案する
-   - oxlint-config-universe が更新されていたら: native プリセットの globals リスト（`npm pack` で取得するか GitHub の `native.js` を見る）と `oxlint.mjs` の globals を diff して追従する
-   - `oxlint-config-expo` が登場していたら: ツール選定の前提が変わるので、README の選定記録の再検討をユーザーに提案する（勝手に乗り換えない）
-
-### このパッケージが持ってよいルールの基準（最重要）
-
-**共有設定に書く無効化は、次のどちらかを満たすものに限る。**
-
-1. **Expo プロジェクトとして off にすべきもの** — Expo / React Native / TypeScript の仕組みそのものに由来し、どの Expo アプリでも同じ理由で成り立つもの（例: Hermes が `toSorted` 未対応 / expo-router の予約ファイル名・予約 export 名 / アセットとネイティブモジュールの遅延読み込みに `require` が必要 / `T | undefined` に対する「null を使え」という助言が TS では成り立たない）
-2. **どのプロジェクトでも off にする必要があるもの** — この開発環境の構成に由来し、全アプリで同じ判断になるもの（例: ルール同士が構造的に両立しない組み合わせ）
-
-**逆に、次は共有設定に置いてはいけない。各アプリのファイル単位の設定に委ねる:**
-
-- **「今あるアプリではたまたま該当しない」だけのもの。** 例として `sonarjs/pseudo-random` は当初「消費者向けアプリなので暗号用途の乱数を持たない」として全体 off にしていたが、これは Expo 由来でも全プロジェクト共通でもなく、将来 暗号強度が要る機能を作ったときに**警告が出なくなる**。各アプリで Math.random を使うファイルへスコープを絞る形へ戻した
-- **一般的なコード品質ルールで、特定の場面でしか無効化の理由が立たないもの。** 例として `eslint/no-await-in-loop` を全体 off にしていたが、発火箇所を調べると「テスト・E2E（手順を追って逐次実行するのが自然）」と「順序依存のロジックを持つ個別ファイル」に分かれた。前者だけを共有の test / e2e override に残し、後者は各アプリへ委ねた
-
-### 無効化を追加したくなったときの手順
-
-1. **まず本当に無効化が要るか確かめる。** リファクタで有効化できるものは直す（型を付ける・関数を切り出す・命名を変える など）
-2. 無効化する場合、**発火箇所を全アプリで実測してから**置き場所を決める
-   ```bash
-   # 共有設定から一時的に該当ルールを外して、どのアプリのどのファイルで出るか見る
-   cd ../<各アプリ> && bunx oxlint | grep <rule-name>
-   ```
-   - 全アプリで同じ構造的理由 → 共有設定（上の基準1か2を満たすか確認する）
-   - ファイル・機能に固有 → そのアプリの `oxlint.config.ts` にファイル単位で
-3. **理由を必ず書く。** 「なぜ無効化が避けられないのか」が後から読んで分かる粒度で
-4. **1つ消すために別の抑止が増えるなら本末転倒。** ルール同士が両立しない組み合わせは実在する（下記の罠を参照）ので、そう判定したら維持してよい
-
-### ルールを追加・変更するときの既知の罠
-
-過去にここで踏んだもの。同じ調査を繰り返さないこと。
-
-- **ultracite のプリセットは overrides で供給されると後から上書きできない。** jest プリセットがこの形で、消費側の overrides でも各アプリの設定でも上書きできなかった（実測）。プリセットの方針とフリートの慣習が食い違う場合は、**プリセットを使わず必要なルールだけを自前の overrides で opt-in する**（現在の jest ルールがこの形）
-- **自動修正が別のルールと衝突することがある。** `jest/no-untyped-mock-factory` の自動修正は `jest.mock<typeof import("m")>(...)` を生成するが、これは `typescript/consistent-type-imports` が禁じる形であり、かつ部分モックでは型エラーになる（どちらも実測して無効化済み）。**`oxlint --fix` を回したら必ず `bun typecheck` も通す**
-- **`--fix` は `jest.mock` だけでなく `jest.doMock` にも及ぶ。** 差し戻しが要るときは両方を対象にすること
-
-### 設定を変えたら
-
-`oxlint.mjs` / `oxfmt.mjs` を編集した場合、**なぜその設定なのかをコメントに残す**。このリポジトリのコメントは「後から読む人が同じ調査を繰り返さないため」に書かれているので、移行の理由や実測した事実（バージョンと挙動）を書き添えること。
-
----
-
-## Phase 3.5: 設定ファイルのスリム化
-
-更新で**プリセット側の既定値が変わり、これまで必要だった上書きが不要になっている**ことがある。不要な記述が残ると「なぜこの設定があるのか」が読み取れなくなるので、更新のたびに棚卸しする。
-
-### 削除対象
-
-1. **デフォルト値と同じ設定** — 書かなくても同じ動作をするもの
-2. **継承元と同じ値での上書き** — ultracite プリセットが既に同じ値にしているルール、および `overrides` でトップレベルの `rules` と同じ値を再指定しているもの
-3. **効いていない無効化・ignore 指定** — 対象のルールがもう存在しない、ignore パターンにマッチするファイルが無い、など
-
-### 削除しないもの
-
-- **`ignorePatterns` のトップレベル再宣言** — `extends` は ignorePatterns をマージしない（実測確認済み）。一見 `core.ignorePatterns` の重複に見えるが、**消すと静かに壊れる**。`bun verify` が検知する
-- **`fixtures/` 配下** — 意図的に指摘が出るよう書かれた検査用の資材
-- **確認が取れないもの** — デフォルト値やマージ戦略が不明なものは推測で消さない
-
-### 確認方法（推測で消さない）
-
-**デフォルト値** はスキーマを一次情報にする。
+## Phase 4: 検証
 
 ```bash
-cat node_modules/oxlint/configuration_schema.json | grep -A3 '"default"' | head -40
-cat node_modules/oxfmt/configuration_schema.json
+bun verify
+bun lint
 ```
 
-**プリセット・上位設定との重複**は機械的に洗い出す。
+両方が緑になるまで push しない。`bun verify` はツールチェーンの健全性だけを見る。整形出力の変化は `bun lint` でしか落ちない。
 
-```bash
-bun -e '
-import core from "ultracite/oxlint/core";
-import react from "ultracite/oxlint/react";
-import jsPlugins from "ultracite/oxlint/js-plugins";
-import { rules, overrides } from "./oxlint.mjs";
-const preset = {};
-for (const p of [core, react, jsPlugins]) {
-  Object.assign(preset, p.rules ?? {});
-  for (const o of p.overrides ?? []) Object.assign(preset, o.rules ?? {});
-}
-console.log("--- rules のうちプリセットと同値（削除候補） ---");
-for (const [id, v] of Object.entries(rules)) {
-  if (JSON.stringify(preset[id]) === JSON.stringify(v)) console.log(" ", id, JSON.stringify(v));
-}
-console.log("--- overrides のうちトップレベル rules と同値（削除候補） ---");
-for (const o of overrides) {
-  for (const [id, v] of Object.entries(o.rules ?? {})) {
-    if (JSON.stringify(rules[id]) === JSON.stringify(v)) {
-      console.log(" ", JSON.stringify(o.files), id, JSON.stringify(v));
-    }
-  }
-}
-'
-```
+`bun lint` が落ちたら `bun fix` を当ててから `git diff` を確認する。`bun fix` は配布物 `oxfmt.mjs` も自動修正しうる。
 
-oxfmt 側は `{ ...ultracite }` のスプレッド合成なので、**全キーが ultracite と同値なのは正常** （それを機械的に列挙しても意味がない）。見るべきは **`oxfmt.mjs` に literal で書いたキー**だけ。
-
-```bash
-grep -n '^\s*[a-zA-Z]\+:' oxfmt.mjs   # スプレッド以外に書いているキーを目視で確認
-```
-
-現在 literal で書いているのは `ignorePatterns` のみ（ultracite の分とアプリ固有分をマージするため必要）。将来ここへ整形オプションを足した場合は、`node_modules/oxfmt/configuration_schema.json` の `default` および `ultracite/oxfmt` の値と比べ、同値なら削除する。
-
-### 削除するときの作法
-
-- **理由コメントに書かれた知識を捨てない。** 重複する設定を消すと、その設定に付いていた理由コメントも一緒に消えることになる。**上位側のコメントに同じ理由が書かれていない場合は、上位側へ理由を追記してから消す**（このリポジトリのコメントは「後から読む人が同じ調査を繰り返さないため」に書かれている）
-- **削除後は必ず `bun verify` を通す。** 「消しても同じ」と判断したものが実は効いていた場合、off にしたルールの検査項目が落ちる
-- **アプリ側でも実測する。** Phase 5-2 の `file:` 参照で `bun codesweep:check` を回し、削除前後で**新規指摘が増えていないこと**を確認する（増えていたら削除は誤りなので戻す）
-
-### 各アプリの設定も対象
-
-共有側に無効化を追加した結果、**各アプリの `oxlint.config.ts` に不要な `off` が残る**ことがある。インライン抑止は共有設定の `options.reportUnusedDisableDirectives` が自動検出するが、 **設定ファイルの `off` は自動検出されない**ので、Phase 6 の展開時に各アプリで手動確認する（該当行を一時的に外して `bunx oxlint` を回し、指摘が出なければ削除できる）。
-
----
-
-## Phase 4: 新機能の提案
-
-更新で使えるようになったものを洗い出し、**採用するかをユーザーに確認する**（勝手に入れない）。
-
-観点:
-
-- **ultracite の未使用プリセット** — 採用するとテストコードへのルールが増えるため、既存コードへの影響を必ず先に測る。jest プリセットは 2026-07 に検討し、**プリセットのまま入れると消費側の全アプリ合計 5,601 件**（大半が `consistent-test-it` などの表記の好み）になったため、必要なルールだけを opt-in する形で採用した（204 件）
-- **oxlint の新ルール・新カテゴリ** — フリート標準に入れる価値があるか
-- **oxfmt の新オプション** — 整形結果が変わるものは全アプリに差分が出るので影響を明示する
-
-提案するときは「何ができるようになるか」だけでなく、**入れた場合に各アプリで何件の新規指摘が出るか**を実測して添える（Phase 5 の実アプリ検証で測れる）。既存コードへの影響が大きい場合は、アプリ側で段階的に解消する前提での採用可否をユーザーに判断してもらう。
-
----
-
-## Phase 5: 検証
-
-### 5-1. スモークテスト（必須）
-
-```bash
-bun verify   # ツールチェーンが壊れていないか
-bun lint     # 自リポジトリの整形・lint（落ちたら bun fix）
-```
-
-**両方が緑になるまで push しない。** この2つは見ているものが違う。`bun verify` はツールチェーンが壊れていないかしか見ないので、**oxfmt の更新で整形出力が変わっても verify は緑のまま `bun lint` だけが落ちる**（整形出力の変化はバージョン更新で普通に起きる）。verify だけ見て push すると CI が赤くなる。
-
-`bun lint` が落ちたら `bun fix` を当ててから、下記ガードレールのとおり `git diff` を確認する。
-
-`bun verify` が落ちた場合の読み方:
+`bun verify` が落ちた場合:
 
 | 落ちた項目 | 疑うこと |
 | --- | --- |
-| ルールが読み込まれている | 設定・プリセットの解決に失敗 |
-| プラグイン◯◯が動いている | プラグインと oxlint のバージョンが噛み合っていない |
-| ignorePatterns が効いている | `extends` のマージ仕様が変わった／再宣言が失われた |
-| override が効いている | override の書式が変わった |
-| off にしたルールが発火しない | ルール ID の改名、または無効化の書式変更 |
-| ultracite の◯◯がルールを持っている | ultracite の export 構造が変わった |
+| ultracite の oxfmt が整形設定を持っている | ultracite の export 構造が変わった |
+| oxfmt の合成結果に整形設定が残っている | スプレッド合成の前提が壊れた |
 | oxfmt に ultracite の整形設定が効いている | **スプレッド合成の前提が壊れた（最も静かな失敗）** |
 
-### 5-2. 実アプリでの検証（メジャー更新時・新機能採用時は必須）
+メジャー更新時は消費側アプリを1つ、`file:../expo-oxc-config` で一時参照して `bun codesweep:check` する。確認後は `git restore package.json bun.lock && bun install` で戻す。
 
-fixtures だけでは実コード固有の挙動まではわからない。消費側のアプリを1つ検証台にする。 **最小構成のテンプレートリポジトリ**があればそれが速い（共通パターンを含みつつ codesweep が数秒で終わる）。
+## Phase 5: コミットと展開
+
+1. コミットは日本語・Conventional Commits 準拠
+2. push は実行前にユーザーへ確認する
+3. 各アプリへは次を案内する
 
 ```bash
-cd <検証台にするアプリ>
-# package.json の @tzwzx/expo-oxc-config を "file:../expo-oxc-config" へ一時的に差し替える
-bun install
+bun update @tzwzx/expo-oxc-config
 bun codesweep:check
-# 確認できたら復元する
-git restore package.json bun.lock && bun install
 ```
-
-`file:` 参照にすると**このリポジトリの新しい依存（新 oxlint 含む）がアプリへ実際に入る**ので、push 前に本番同等の検証ができる。新規指摘が出た場合はその件数を Phase 4 の提案に反映する。
-
-影響が大きそうなときは、規模の違うアプリでも同じ手順で測る。
-
----
-
-## Phase 6: コミットと展開
-
-1. **コミット** — 論理的なまとまりごとに分ける（バージョン更新 / 設定の追従 / 新機能の採用）。コミットメッセージは日本語・Conventional Commits 準拠。設定を変えた場合は**何がどう変わったから追従したのか**を本文に書く
-
-2. **push の確認** — push はリモート操作なので、実行前に必ずユーザーへ確認する
-
-3. **各アプリへの展開を案内** — push しただけではアプリは追従しない。次の手順を伝える
-
-   ```bash
-   # 各アプリで
-   bun update @tzwzx/expo-oxc-config
-   bun codesweep:check
-   ```
-
-   新規指摘が出るアプリがある場合は、それも併せて報告する。
-
----
 
 ## ガードレール
 
-- **`bun verify` と `bun lint` が緑になる前に push しない。** 消費側のアプリに一斉に効くため、壊れた状態を配ると被害が広い。verify だけでは整形出力の変化を捕まえられない（Phase 5-1 参照）
-- **`bun fix` を走らせたあとは `git diff` を確認する。** `bun fix` は配布物 `oxlint.mjs` / `oxfmt.mjs` も自動修正しうるため、ルール名・設定値が変わっていないことを目視で確かめてから commit する
-- **共有設定は「Expo プロジェクトとして適切なルール」であることを前提にする。** 無効化を足すときも既存の無効化を見直すときも、Phase 3 の基準1／基準2 のどちらを満たすのかを言えること。言えないものは共有側に置かず、各アプリのファイル単位へ降ろす
-- **新機能を勝手に採用しない。** 提案し、影響件数を添えて、ユーザーの判断を仰ぐ
-- **`fixtures/` のコードを"修正"しない。** 意図的に指摘が出るよう書かれた検査用の資材で、きれいに直すと検査が機能しなくなる
-- **バージョンの範囲指定（`^` / `~`）を入れない。** フリート共通で完全固定にしている
-- **アプリ側の package.json に `oxlint` / `oxfmt` / `ultracite` を戻さない。** 二重管理になり、このリポジトリで集約した意味が失われる
+- `bun verify` と `bun lint` が緑になる前に push しない
+- `bun fix` のあと `git diff` を確認する
+- 新機能を勝手に採用しない
+- バージョンの範囲指定（`^` / `~`）を入れない
+- アプリ側の package.json に `oxfmt` / `ultracite` を戻さない

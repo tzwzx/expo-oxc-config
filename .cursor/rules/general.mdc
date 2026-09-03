@@ -5,13 +5,11 @@ description: expo-oxc-config 固有の規約
 
 # expo-oxc-config
 
-Expo アプリ群が使う oxlint / oxfmt のツールチェーンと共有ルールの配布元。アプリではない。
+Expo アプリ群が使う oxfmt のツールチェーンと共有設定の配布元。アプリではない。
 
-- ツール本体（`oxlint` / `oxfmt` / `ultracite`）と JS プラグイン3種を `dependencies` として所有する。アプリ側の package.json には無い。ここでの更新は消費側すべてに一斉に効く。
+- ツール本体（`oxfmt` / `ultracite`）を `dependencies` として所有する。アプリ側の package.json には無い。ここでの更新は消費側すべてに一斉に効く。
 - 更新はスキル `update-toolchain` を使い、`bun verify` と `bun lint` を通してから push する。verify はツールチェーンの健全性だけを見る。整形出力の変化は `bun lint` でしか落ちない。
-- `ignorePatterns` はトップレベルで再宣言する。oxlint の `extends` はこれをマージしない。
 - `oxfmt` は `extends` 非対応。`{ ...ultracite }` のスプレッドで合成する。崩れるとエラーも出ないまま整形が素通りする。
-- アプリ側から `oxlint` / `oxfmt` を import させない。入口は本パッケージの `defineConfig` だけ。
-- `fixtures/` は「本来なら指摘されるコード」を意図的に置いている。直さない。除外は `ignorePatterns` と `--disable-nested-config` の2点セット。素の `bunx oxfmt` / `bunx oxlint` は fixtures を踏むので、`bun lint` / `bun fix` を使う。
+- アプリ側から `oxfmt` を import させない。入口は本パッケージの `defineConfig` だけ。
 - `postinstall` は置かない（依存として install されるため）。
-- 自リポジトリ都合の緩和は `oxlint.config.ts` / `oxfmt.config.ts` に書く。`oxlint.mjs` を触ると全アプリに効く。
+- 自リポジトリ都合の除外は `oxfmt.config.ts` に書く。`oxfmt.mjs` を触ると全アプリに効く。

@@ -1,31 +1,24 @@
 {
   "name": "@tzwzx/expo-oxc-config",
   "version": "0.2.0",
-  "description": "Shared oxlint/oxfmt toolchain + config for the Expo app fleet (ultracite wrapper with ignorePatterns fix and common rules)",
+  "description": "Shared oxfmt toolchain + config for the Expo app fleet (ultracite wrapper)",
   "license": "MIT",
   "repository": "github:tzwzx/expo-oxc-config",
   "files": [
-    "oxlint.mjs",
-    "oxlint.d.mts",
     "oxfmt.mjs",
     "oxfmt.d.mts"
   ],
   "type": "module",
   "exports": {
-    "./oxlint": "./oxlint.mjs",
     "./oxfmt": "./oxfmt.mjs"
   },
   "scripts": {
     "verify": "bun scripts/verify.ts",
-    "lint": "oxfmt --check --disable-nested-config && oxlint --disable-nested-config",
-    "fix": "oxfmt --disable-nested-config && oxlint --disable-nested-config --fix"
+    "lint": "oxfmt --check",
+    "fix": "oxfmt"
   },
   "dependencies": {
-    "eslint-plugin-github": "6.1.2",
-    "eslint-plugin-sonarjs": "4.2.0",
     "oxfmt": "0.64.0",
-    "oxlint": "1.79.0",
-    "oxlint-plugin-react-doctor": "0.9.12",
     "ultracite": "7.10.6"
   }
 }
