@@ -1,6 +1,0 @@
-# rulesync が生成するファイル（差分レビューで折りたたむ）
-AGENTS.md linguist-generated=true
-CLAUDE.md linguist-generated=true
-.claude/rules/** linguist-generated=true
-.cursor/rules/** linguist-generated=true
-.agents/memories/** linguist-generated=true

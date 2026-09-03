@@ -6,14 +6,8 @@
 import { defineConfig as defineOxfmtConfig } from "oxfmt";
 import ultracite from "ultracite/oxfmt";
 
-// AI ルール断片とエージェント向け文書。整形対象外。
-export const generatedRulePatterns = [
-  ".claude/rules/**",
-  ".cursor/rules/**",
-  ".agents/memories/**",
-  "AGENTS.md",
-  "CLAUDE.md",
-];
+// Cursor のルール断片。整形対象外。
+export const generatedRulePatterns = [".cursor/rules/**"];
 
 /**
  * ultracite プリセットにアプリ固有の ignorePatterns をマージした config を返す。

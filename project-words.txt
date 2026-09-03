@@ -1,11 +1,9 @@
 bunx
-claudecode
 codesweep
 cursorrules
 fallowrc
 fdescribe
 oxfmtrc
-rulesync
 tosorted
 tzwzx
 ultracite
