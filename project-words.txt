@@ -6,4 +6,3 @@ fdescribe
 oxfmtrc
 tosorted
 tzwzx
-ultracite

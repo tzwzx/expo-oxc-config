@@ -1,24 +1,8 @@
 {
   "name": "@tzwzx/expo-oxc-config",
   "version": "0.2.0",
-  "description": "Shared oxfmt toolchain + config for the Expo app fleet (ultracite wrapper)",
+  "description": "Deprecated archive for the former shared Expo formatter configuration; install oxfmt directly instead.",
+  "private": true,
   "license": "MIT",
-  "repository": "github:tzwzx/expo-oxc-config",
-  "files": [
-    "oxfmt.mjs",
-    "oxfmt.d.mts"
-  ],
-  "type": "module",
-  "exports": {
-    "./oxfmt": "./oxfmt.mjs"
-  },
-  "scripts": {
-    "verify": "bun scripts/verify.ts",
-    "lint": "oxfmt --check",
-    "fix": "oxfmt"
-  },
-  "dependencies": {
-    "oxfmt": "0.64.0",
-    "ultracite": "7.10.6"
-  }
+  "repository": "github:tzwzx/expo-oxc-config"
 }
