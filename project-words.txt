@@ -1,8 +1,0 @@
-bunx
-codesweep
-cursorrules
-fallowrc
-fdescribe
-oxfmtrc
-tosorted
-tzwzx
