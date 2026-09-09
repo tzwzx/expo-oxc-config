@@ -1,3 +1,0 @@
-## コミットメッセージ
-
-[Conventional Commits](https://www.conventionalcommits.org/ja/v1.0.0/) に準拠し、**日本語で**書く。破壊的変更は `!` かフッターの `BREAKING CHANGE:` で明示する。タイトルで足りなければ 1 行空けて本文に「なぜ」を書く。
